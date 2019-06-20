@@ -35,7 +35,7 @@ class ExecutionProvider(metaclass=ABCMeta):
 
 
     @abstractmethod
-    def submit(self, command, blocksize, tasks_per_node, job_name="parsl.auto"):
+    def submit(self, command: str, blocksize: int, tasks_per_node: int, job_name: str = "parsl.auto") -> Any:
         ''' The submit method takes the command string to be executed upon
         instantiation of a resource most often to start a pilot (such as IPP engine
         or even Swift-T engines).
