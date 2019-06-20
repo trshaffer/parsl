@@ -8,6 +8,8 @@ from parsl.providers.error import *
 from parsl.providers.provider_base import ExecutionProvider
 from parsl.utils import RepresentationMixin
 
+from typing import List, Optional
+
 try:
     from kubernetes import client, config
     _kubernetes_enabled = True
@@ -73,7 +75,7 @@ class KubernetesProvider(ExecutionProvider, RepresentationMixin):
                  group_id=None,
                  run_as_non_root=False,
                  secret=None,
-                 persistent_volumes=[]):
+                 persistent_volumes=[]) -> None:
         if not _kubernetes_enabled:
             raise OptionalModuleMissing(['kubernetes'],
                                         "Kubernetes provider requires kubernetes module and config.")
@@ -100,7 +102,7 @@ class KubernetesProvider(ExecutionProvider, RepresentationMixin):
         # Dictionary that keeps track of jobs, keyed on job_id
         self.resources = {}
 
-    def submit(self, cmd_string, blocksize, tasks_per_node, job_name="parsl"):
+    def submit(self, cmd_string, blocksize, tasks_per_node, job_name="parsl") -> Optional[str]:
         """ Submit a job
         Args:
              - cmd_string  :(String) - Name of the container to initiate
@@ -137,7 +139,7 @@ class KubernetesProvider(ExecutionProvider, RepresentationMixin):
 
         return pod_name
 
-    def status(self, job_ids):
+    def status(self, job_ids) -> List[str]:
         """ Get the status of a list of jobs identified by the job identifiers
         returned from the submit request.
         Args:
@@ -152,7 +154,7 @@ class KubernetesProvider(ExecutionProvider, RepresentationMixin):
         # This is a hack
         return ['RUNNING' for jid in job_ids]
 
-    def cancel(self, job_ids):
+    def cancel(self, job_ids) -> List[bool]:
         """ Cancels the jobs specified by a list of job ids
         Args:
         job_ids : [<job_id> ...]
@@ -189,7 +191,7 @@ class KubernetesProvider(ExecutionProvider, RepresentationMixin):
                     job_name,
                     port=80,
                     cmd_string=None,
-                    volumes=[]):
+                    volumes=[]) -> None:
         """ Create a kubernetes pod for the job.
         Args:
               - image (string) : Docker image to launch
@@ -252,7 +254,7 @@ class KubernetesProvider(ExecutionProvider, RepresentationMixin):
                                                               body=pod)
         logger.debug("Pod created. status='{0}'".format(str(api_response.status)))
 
-    def _delete_pod(self, pod_name):
+    def _delete_pod(self, pod_name) -> None:
         """Delete a pod"""
 
         api_response = self.kube_client.delete_namespaced_pod(name=pod_name,
@@ -261,13 +263,13 @@ class KubernetesProvider(ExecutionProvider, RepresentationMixin):
         logger.debug("Pod deleted. status='{0}'".format(str(api_response.status)))
 
     @property
-    def scaling_enabled(self):
+    def scaling_enabled(self) -> bool:
         return True
 
     @property
-    def channels_required(self):
+    def channels_required(self) -> bool:
         return False
 
     @property
-    def label(self):
+    def label(self) -> str:
         return "kubernetes"
