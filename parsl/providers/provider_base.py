@@ -79,7 +79,7 @@ class ExecutionProvider(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def cancel(self, job_ids):
+    def cancel(self, job_ids: List[Any]) -> List[bool]:
         ''' Cancels the resources identified by the job_ids provided by the user.
 
         Args:
@@ -95,7 +95,7 @@ class ExecutionProvider(metaclass=ABCMeta):
         pass
 
     @abstractproperty
-    def scaling_enabled(self):
+    def scaling_enabled(self) -> bool:
         ''' The callers of ParslExecutors need to differentiate between Executors
         and Executors wrapped in a resource provider
 
@@ -106,6 +106,6 @@ class ExecutionProvider(metaclass=ABCMeta):
         pass
 
     @abstractproperty
-    def label(self):
+    def label(self) -> str:
         ''' Provides the label for this provider '''
         pass
