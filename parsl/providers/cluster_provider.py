@@ -3,7 +3,7 @@ from string import Template
 
 from parsl.providers.error import SchedulerMissingArgs, ScriptPathError
 from parsl.launchers.error import BadLauncher
-from parsl.providers.provider_base import ExecutionProvider
+from parsl.providers.provider_base import ExecutionProvider, Channeled
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +11,7 @@ from typing import Any, Dict, Optional, Tuple
 from parsl.channels.base import Channel
 from parsl.launchers.launchers import Launcher
 
-class ClusterProvider(ExecutionProvider):
+class ClusterProvider(ExecutionProvider, Channeled):
     """ This class defines behavior common to all cluster/supercompute-style scheduler systems.
 
     Parameters

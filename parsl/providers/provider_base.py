@@ -4,6 +4,7 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 from typing import Any, Dict, List, Optional
 from parsl.channels.base import Channel
 
+
 class ExecutionProvider(metaclass=ABCMeta):
     """ Define the strict interface for all Execution Providers
 
@@ -109,3 +110,9 @@ class ExecutionProvider(metaclass=ABCMeta):
     def label(self) -> str:
         ''' Provides the label for this provider '''
         pass
+
+
+class Channeled():
+   """A marker type to indicate that parsl should manage Channels for this provider"""
+   channel: Channel
+
