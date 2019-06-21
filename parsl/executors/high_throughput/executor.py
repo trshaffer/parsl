@@ -146,7 +146,7 @@ class HighThroughputExecutor(ParslExecutor, RepresentationMixin):
         In case of a remote file system, specify the path to where logs will be kept.
     """
 
-    # @typeguard.typechecked
+    @typeguard.typechecked
     def __init__(self,
                  label: str = 'HighThroughputExecutor',
                  provider: ExecutionProvider = LocalProvider(),

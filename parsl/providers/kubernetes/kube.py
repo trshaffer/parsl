@@ -25,11 +25,6 @@ class KubernetesProvider(ExecutionProvider, RepresentationMixin):
         Kubernetes namespace to create deployments.
     image : str
         Docker image to use in the deployment.
-    channel : Channel
-        Channel for accessing this provider. Possible channels include
-        :class:`~parsl.channels.LocalChannel` (the default),
-        :class:`~parsl.channels.SSHChannel`, or
-        :class:`~parsl.channels.SSHInteractiveLoginChannel`.
     nodes_per_block : int
         Nodes to provision per block.
     init_blocks : int
@@ -63,7 +58,6 @@ class KubernetesProvider(ExecutionProvider, RepresentationMixin):
     def __init__(self,
                  image,
                  namespace='default',
-                 channel=None,
                  nodes_per_block=1,
                  init_blocks=4,
                  min_blocks=0,
@@ -83,7 +77,6 @@ class KubernetesProvider(ExecutionProvider, RepresentationMixin):
 
         self.namespace = namespace
         self.image = image
-        self.channel = channel
         self.nodes_per_block = nodes_per_block
         self.init_blocks = init_blocks
         self.min_blocks = min_blocks
@@ -265,10 +258,6 @@ class KubernetesProvider(ExecutionProvider, RepresentationMixin):
     @property
     def scaling_enabled(self) -> bool:
         return True
-
-    @property
-    def channels_required(self) -> bool:
-        return False
 
     @property
     def label(self) -> str:
