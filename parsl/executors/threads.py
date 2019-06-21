@@ -30,7 +30,7 @@ class ThreadPoolExecutor(ParslExecutor, RepresentationMixin):
 
     @typeguard.typechecked
     def __init__(self, label: str = 'threads', max_threads: int = 2,
-                 thread_name_prefix: str = '', storage_access: List[Any] = None,
+                 thread_name_prefix: str = '', storage_access: Optional[List[Any]] = None,
                  working_dir: Optional[str] = None, managed: bool = True):
         self.label = label
         self._scaling_enabled = False

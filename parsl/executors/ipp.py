@@ -78,9 +78,9 @@ class IPyParallelExecutor(ParslExecutor, RepresentationMixin):
                  working_dir: Optional[str] = None,
                  controller: Controller = Controller(),
                  container_image: Optional[str] = None,
-                 engine_dir: str = None,
-                 storage_access: List[Any] = None,
-                 engine_debug_level: str = None,
+                 engine_dir: Optional[str] = None,
+                 storage_access: Optional[List[Any]] = None,
+                 engine_debug_level: Optional[str] = None,
                  workers_per_node: int = 1,
                  managed: bool = True) -> None:
         self.provider = provider

@@ -2,12 +2,13 @@ from abc import ABCMeta, abstractmethod
 
 from parsl.utils import RepresentationMixin
 
+from typing import Optional
 
 class Launcher(RepresentationMixin, metaclass=ABCMeta):
     """ Launcher base class to enforce launcher interface
     """
     @abstractmethod
-    def __call__(self, command: str, tasks_per_node: int, nodes_per_block: int, walltime: int=None) -> str:
+    def __call__(self, command: str, tasks_per_node: int, nodes_per_block: int, walltime: Optional[int]=None) -> str:
         """ Wraps the command with the Launcher calls.
         """
         pass

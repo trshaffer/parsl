@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from typing import Type
     from typing import Dict
     from typing import Any
+    from typing import Optional
     from parsl.dataflow.dflow import DataFlowKernel
 
 
@@ -29,7 +30,7 @@ class AppBase(metaclass=ABCMeta):
 
     """
 
-    def __init__(self, func, data_flow_kernel: "DataFlowKernel" = None, walltime: int = 60, executors='all', cache: bool = False) -> None:
+    def __init__(self, func, data_flow_kernel: "Optional[DataFlowKernel]" = None, walltime: int = 60, executors='all', cache: bool = False) -> None:
         """Construct the App object.
 
         Args:
@@ -83,7 +84,7 @@ class AppBase(metaclass=ABCMeta):
         pass
 
 
-def App(apptype, data_flow_kernel: "DataFlowKernel" = None, walltime: int = 60, cache: bool = False, executors='all'):
+def App(apptype, data_flow_kernel: "Optional[DataFlowKernel]" = None, walltime: int = 60, cache: bool = False, executors='all'):
     """The App decorator function.
 
     Args:
@@ -124,7 +125,7 @@ def App(apptype, data_flow_kernel: "DataFlowKernel" = None, walltime: int = 60, 
     return wrapper
 
 
-def python_app(function=None, data_flow_kernel: "DataFlowKernel" = None, walltime: int = 60, cache: bool = False, executors='all'):
+def python_app(function=None, data_flow_kernel: "Optional[DataFlowKernel]" = None, walltime: int = 60, cache: bool = False, executors='all'):
     """Decorator function for making python apps.
 
     Parameters
@@ -159,7 +160,7 @@ def python_app(function=None, data_flow_kernel: "DataFlowKernel" = None, walltim
     return decorator
 
 
-def bash_app(function=None, data_flow_kernel: "DataFlowKernel" = None, walltime: int = 60, cache: bool = False, executors='all'):
+def bash_app(function=None, data_flow_kernel: "Optional[DataFlowKernel]" = None, walltime: int = 60, cache: bool = False, executors='all'):
     """Decorator function for making bash apps.
 
     Parameters

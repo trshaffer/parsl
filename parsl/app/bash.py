@@ -1,6 +1,7 @@
 import logging
 from functools import update_wrapper
 from inspect import signature, Parameter
+from typing import Optional
 
 from parsl.app.errors import wrap_error
 from parsl.app.futures import DataFuture
@@ -117,7 +118,7 @@ def remote_side_bash_executor(func, *args, **kwargs) -> int:
 
 class BashApp(AppBase):
 
-    def __init__(self, func, data_flow_kernel: DataFlowKernel =None, walltime: int =60, cache: bool=False, executors='all') -> None:
+    def __init__(self, func, data_flow_kernel: Optional[DataFlowKernel] = None, walltime: int =60, cache: bool=False, executors='all') -> None:
         super().__init__(func, data_flow_kernel=data_flow_kernel, walltime=60, executors=executors, cache=cache)
         self.kwargs = {}
 

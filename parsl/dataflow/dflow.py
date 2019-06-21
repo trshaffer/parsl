@@ -600,7 +600,7 @@ class DataFlowKernel(object):
 
         return new_args, kwargs, dep_failures
 
-    def submit(self, func, *args, executors: Union[str, List[str]] ='all', fn_hash: str =None, cache: bool =False, **kwargs) -> AppFuture:
+    def submit(self, func, *args, executors: Union[str, List[str]] ='all', fn_hash: Optional[str] =None, cache: bool =False, **kwargs) -> AppFuture:
         """Add task to the dataflow system.
 
         If the app task has the executors attributes not set (default=='all')

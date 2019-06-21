@@ -5,7 +5,7 @@ import time
 
 from parsl.dataflow.strategy import Strategy
 
-from typing import List
+from typing import List, Optional
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from parsl.dataflow.dflow import DataFlowKernel
@@ -133,7 +133,7 @@ class FlowControl(object):
             logger.debug("Eventcount >= threshold")
             self.make_callback(kind="event")
 
-    def make_callback(self, kind: str =None) -> None:
+    def make_callback(self, kind: Optional[str] =None) -> None:
         """Makes the callback and resets the timer.
 
         KWargs:

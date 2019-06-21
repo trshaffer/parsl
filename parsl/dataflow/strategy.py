@@ -150,7 +150,7 @@ class Strategy(object):
         for executor in executors:
             self.executors[executor.label] = {'idle_since': None, 'config': executor.label}
 
-    def _strategy_noop(self, tasks, kind: str =None) -> None:
+    def _strategy_noop(self, tasks, kind: Optional[str] =None) -> None:
         """Do nothing.
 
         Args:
@@ -174,7 +174,7 @@ class Strategy(object):
 
         self.logger_flag = True
 
-    def _strategy_simple(self, tasks, kind: str =None) -> None:
+    def _strategy_simple(self, tasks, kind: Optional[str] =None) -> None:
         """Peek at the DFK and the executors specified.
 
         We assume here that tasks are not held in a runnable

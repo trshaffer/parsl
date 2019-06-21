@@ -71,7 +71,7 @@ class TorqueProvider(ClusterProvider, RepresentationMixin):
     def __init__(self,
                  channel: Channel =LocalChannel(),
                  account: Optional[str] =None,
-                 queue: str =None,
+                 queue: Optional[str] =None,
                  scheduler_options: str='',
                  worker_init: str='',
                  nodes_per_block: int =1,
