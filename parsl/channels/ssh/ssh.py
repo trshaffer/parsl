@@ -145,7 +145,7 @@ class SSHChannel(Channel, RepresentationMixin):
         )
         return None, stdout, stderr
 
-    def push_file(self, local_source, remote_dir) -> str:
+    def push_file(self, local_source: str, remote_dir: str) -> str:
         ''' Transport a local file to a directory on a remote machine
 
         Args:

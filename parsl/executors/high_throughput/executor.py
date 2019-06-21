@@ -454,7 +454,6 @@ class HighThroughputExecutor(ParslExecutor, RepresentationMixin):
         """
         c = self.command_client.run("HOLD_WORKER;{}".format(worker_id))
         logger.debug("Sent hold request to worker: {}".format(worker_id))
-        return c
 
     @property
     def outstanding(self):
