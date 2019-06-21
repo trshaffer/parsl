@@ -12,6 +12,8 @@ import queue
 import threading
 import json
 
+from typing import Any, Dict
+
 from parsl.version import VERSION as PARSL_VERSION
 from ipyparallel.serialize import serialize_object
 
@@ -157,7 +159,7 @@ class Interchange(object):
         self.command_channel.connect("tcp://{}:{}".format(client_address, client_ports[2]))
         logger.info("Connected to client")
 
-        self.pending_task_queue = queue.Queue(maxsize=10 ** 6)
+        self.pending_task_queue = queue.Queue(maxsize=10 ** 6)  # type: queue.Queue[Any]
 
         self.worker_ports = worker_ports
         self.worker_port_range = worker_port_range
@@ -185,7 +187,8 @@ class Interchange(object):
         logger.info("Bound to ports {},{} for incoming worker connections".format(
             self.worker_task_port, self.worker_result_port))
 
-        self._ready_manager_queue = {}
+        # this could be tightened up plenty
+        self._ready_manager_queue = {}  # type: Dict[str, Any]
 
         self.heartbeat_threshold = heartbeat_threshold
 
@@ -399,8 +402,9 @@ class Interchange(object):
                         # Registration has failed.
                         if self.suppress_failure is False:
                             self._kill_event.set()
-                            e = BadRegistration(manager, critical=True)
-                            result_package = {'task_id': -1, 'exception': serialize_object(e)}
+                            # cannot reuse 'e' variable name for mypy...
+                            e2 = BadRegistration(manager, critical=True)
+                            result_package = {'task_id': -1, 'exception': serialize_object(e2)}
                             pkl_package = pickle.dumps(result_package)
                             self.results_outgoing.send(pkl_package)
                         else:
