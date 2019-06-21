@@ -10,6 +10,8 @@ from concurrent.futures import Future
 import logging
 import threading
 
+from typing import List
+
 from parsl.app.errors import RemoteExceptionWrapper
 
 logger = logging.getLogger(__name__)
@@ -76,7 +78,7 @@ class AppFuture(Future):
         super().__init__()
         self.parent = None
         self._update_lock = threading.Lock()
-        self._outputs = []
+        self._outputs = []  # type: List[Future]
         self._stdout = stdout
         self._stderr = stderr
 

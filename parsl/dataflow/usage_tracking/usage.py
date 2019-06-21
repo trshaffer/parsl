@@ -10,6 +10,8 @@ import sys
 import platform
 import multiprocessing as mp
 
+from typing import Any, List
+
 from parsl.dataflow.states import FINAL_FAILURE_STATES
 from parsl.version import VERSION as PARSL_VERSION
 
@@ -19,7 +21,7 @@ logger = logging.getLogger(__name__)
 def async_process(fn):
     """ Decorator function to launch a function as a separate process """
 
-    def run(*args, **kwargs):
+    def run(*args, **kwargs) -> mp.Process:
         proc = mp.Process(target=fn, args=args, kwargs=kwargs)
         proc.start()
         return proc
@@ -114,7 +116,7 @@ class UsageTracker (object):
         self.sock_timeout = 5
         self.UDP_PORT = port
         self.UDP_IP = None
-        self.procs = []
+        self.procs = []  # type: List[mp.Process]
         self.dfk = dfk
         self.config = self.dfk.config
         self.uuid = str(uuid.uuid4())
