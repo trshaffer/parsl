@@ -409,8 +409,8 @@ class DataFlowKernel(object):
                     self.monitoring.send(MessageType.TASK_INFO, task_log_info)
 
                 try:
-                    fu = Future()
-                    fu.retries_left = 0
+                    fu = Future()  # type: Future[Any]
+                    fu.retries_left = 0  # type: ignore
                     self.tasks[task_id]['exec_fu'] = fu
                     self.tasks[task_id]['app_fu'].update_parent(fu)
                     fu.set_exception(DependencyError(exceptions,
@@ -522,7 +522,11 @@ class DataFlowKernel(object):
         count = 0
         for dep in args:
             if isinstance(dep, Future):
-                if self.tasks[dep.tid]['status'] not in FINAL_STATES:
+
+                # nothing type-wise says that a Future has a tid - there are futures
+                # (for example on retry failure) that are created without a tid, and
+                # the types 
+                if self.tasks[dep.tid]['status'] not in FINAL_STATES:  # type: ignore
                     count += 1
                 depends.extend([dep])
 
@@ -530,14 +534,16 @@ class DataFlowKernel(object):
         for key in kwargs:
             dep = kwargs[key]
             if isinstance(dep, Future):
-                if self.tasks[dep.tid]['status'] not in FINAL_STATES:
+                # Future doesn't necessarily have a tid
+                if self.tasks[dep.tid]['status'] not in FINAL_STATES:  # type: ignore
                     count += 1
                 depends.extend([dep])
 
         # Check for futures in inputs=[<fut>...]
         for dep in kwargs.get('inputs', []):
             if isinstance(dep, Future):
-                if self.tasks[dep.tid]['status'] not in FINAL_STATES:
+                # Future doesn't necessarily have a tid
+                if self.tasks[dep.tid]['status'] not in FINAL_STATES:  # type: ignore
                     count += 1
                 depends.extend([dep])
 
@@ -568,7 +574,8 @@ class DataFlowKernel(object):
                 try:
                     new_args.extend([dep.result()])
                 except Exception as e:
-                    if self.tasks[dep.tid]['status'] in FINAL_FAILURE_STATES:
+                    # Future doesn't necessarily have a tid
+                    if self.tasks[dep.tid]['status'] in FINAL_FAILURE_STATES:  # type: ignore
                         dep_failures.extend([e])
             else:
                 new_args.extend([dep])
@@ -580,7 +587,8 @@ class DataFlowKernel(object):
                 try:
                     kwargs[key] = dep.result()
                 except Exception as e:
-                    if self.tasks[dep.tid]['status'] in FINAL_FAILURE_STATES:
+                    # Future doesn't necessarily have a tid
+                    if self.tasks[dep.tid]['status'] in FINAL_FAILURE_STATES:  # type: ignore
                         dep_failures.extend([e])
 
         # Check for futures in inputs=[<fut>...]
@@ -591,7 +599,8 @@ class DataFlowKernel(object):
                     try:
                         new_inputs.extend([dep.result()])
                     except Exception as e:
-                        if self.tasks[dep.tid]['status'] in FINAL_FAILURE_STATES:
+                        # Future doesn't necessarily have a tid
+                        if self.tasks[dep.tid]['status'] in FINAL_FAILURE_STATES:  # type: ignore
                             dep_failures.extend([e])
 
                 else:
