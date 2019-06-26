@@ -124,7 +124,7 @@ class IPyParallelExecutor(ParslExecutor, RepresentationMixin):
             logger.info("Launching IPP with Docker image: {0}".format(self.container_image))
 
         self.launch_cmd = command_composer(self.engine_file, self.engine_dir, self.container_image)
-        self.engines = []
+        self.engines = []  # type: List[Any]
 
         if self.provider:
             self._scaling_enabled = self.provider.scaling_enabled
