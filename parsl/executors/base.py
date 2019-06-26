@@ -43,7 +43,7 @@ class ParslExecutor(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def submit(self, func, *args, **kwargs) -> Future:
+    def submit(self, func: Any, *args: Any, **kwargs: Any) -> Future:
         """Submit.
 
         We haven't yet decided on what the args to this can be,
@@ -100,7 +100,7 @@ class ParslExecutor(metaclass=ABCMeta):
         pass
 
     @abstractproperty
-    def scaling_enabled(self):
+    def scaling_enabled(self) -> bool:
         """Specify if scaling is enabled.
 
         The callers of ParslExecutors need to differentiate between Executors
@@ -109,11 +109,11 @@ class ParslExecutor(metaclass=ABCMeta):
         pass
 
     @property
-    def run_dir(self):
+    def run_dir(self) -> str:
         """Path to the run directory.
         """
         return self._run_dir
 
     @run_dir.setter
-    def run_dir(self, value):
+    def run_dir(self, value: str) -> None:
         self._run_dir = value
