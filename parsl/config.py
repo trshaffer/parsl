@@ -96,11 +96,11 @@ class Config(RepresentationMixin):
         self.monitoring = monitoring
 
     @property
-    def executors(self):
+    def executors(self) -> List[ParslExecutor]:
         return self._executors
 
     @executors.setter
-    def executors(self, executors):
+    def executors(self, executors: List[ParslExecutor]) -> None:
         labels = [e.label for e in executors]
         duplicates = [e for n, e in enumerate(labels) if e in labels[:n]]
         if len(duplicates) > 0:
