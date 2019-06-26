@@ -21,7 +21,7 @@ from functools import partial
 # only for type checking:
 from typing import Any, Callable, Dict, Iterable, Optional, Union, List, Sequence, Tuple, cast
 from parsl.channels.base import Channel
-from parsl.providers.provider_base import Channeled, MultiChanneled
+from parsl.providers.provider_base import Channeled, MultiChanneled, ExecutionProvider
 
 import parsl
 from parsl.app.errors import RemoteExceptionWrapper
@@ -197,7 +197,6 @@ class DataFlowKernel(object):
     def _create_task_log_info(self, task_id: int, fail_mode: str) -> Dict[str, Any]:
         """
         Create the dictionary that will be included in the log.
-
         """
 
         # because self.tasks[task_id] is now a TaskRecord not a Dict[str,...], type checking
@@ -376,14 +375,14 @@ class DataFlowKernel(object):
 
         return
 
-    def handle_app_update(self, task_id, future, memo_cbk=False):
+    def handle_app_update(self, task_id: int, future: AppFuture, memo_cbk: bool = False) -> None:
         """This function is called as a callback when an AppFuture
         is in its final state.
 
         It will trigger post-app processing such as checkpointing.
 
         Args:
-             task_id (string) : Task id
+             task_id (int) : Task id  [TODO: update master docs - not an int]
              future (Future) : The relevant app future (which should be
                  consistent with the task structure 'app_fu' entry
 
@@ -408,10 +407,10 @@ class DataFlowKernel(object):
         return
 
     @staticmethod
-    def check_staging_inhibited(kwargs):
+    def check_staging_inhibited(kwargs: Dict[str, Any]) -> bool:
         return kwargs.get('staging_inhibit_output', False)
 
-    def launch_if_ready(self, task_id):
+    def launch_if_ready(self, task_id: int) -> None:
         """
         launch_if_ready will launch the specified task, if it is ready
         to run (for example, without dependencies, and in pending state).
@@ -467,7 +466,7 @@ class DataFlowKernel(object):
 
                 self.tasks[task_id]['exec_fu'] = exec_fu
 
-    def launch_task(self, task_id, executable, *args, **kwargs):
+    def launch_task(self, task_id: int, executable: Callable, *args: Tuple[Any, ...], **kwargs: Dict[str, Any]) -> Future:
         """Handle the actual submission of the task to the executor layer.
 
         If the app task has the executors attributes not set (default=='all')
@@ -479,7 +478,7 @@ class DataFlowKernel(object):
         targeted at those specific executors.
 
         Args:
-            task_id (uuid string) : A uuid string that uniquely identifies the task
+            task_id (int) : A uuid string that uniquely identifies the task
             executable (callable) : A callable object
             args (list of positional args)
             kwargs (arbitrary keyword arguments)
@@ -490,8 +489,8 @@ class DataFlowKernel(object):
         """
         self.tasks[task_id]['time_submitted'] = datetime.datetime.now()
 
-        hit, memo_fu = self.memoizer.check_memo(task_id, self.tasks[task_id])
-        if hit:
+        memo_fu = self.memoizer.check_memo(task_id, self.tasks[task_id])
+        if memo_fu:
             logger.info("Reusing cached result for task {}".format(task_id))
             return memo_fu
 
@@ -517,7 +516,10 @@ class DataFlowKernel(object):
             task_log_info = self._create_task_log_info(task_id, 'lazy')
             self.monitoring.send(MessageType.TASK_INFO, task_log_info)
 
-        exec_fu.retries_left = self._config.retries - \
+        # exec_fu is an arbitrary future so it doesn't have a retries_left attribute
+        # see notes about this elsewhere about moving that value into the task structure
+        # out of the exec future
+        cast(Any, exec_fu).retries_left = self._config.retries - \
             self.tasks[task_id]['fail_count']
         logger.info("Task {} launched on executor {}".format(task_id, executor.label))
         return exec_fu
@@ -553,7 +555,7 @@ class DataFlowKernel(object):
 
         return tuple(newargs), kwargs, func
 
-    def _add_output_deps(self, executor, args, kwargs, app_fut, func):
+    def _add_output_deps(self, executor: str, args: Tuple[Any, ...], kwargs: Dict[str, Any], app_fut: AppFuture, func: Callable) -> Callable:
         logger.debug("Adding output dependencies")
         outputs = kwargs.get('outputs', [])
         app_fut._outputs = []
@@ -602,7 +604,7 @@ class DataFlowKernel(object):
         # Check the positional args
         depends = []
 
-        def check_dep(d):
+        def check_dep(d: Any) -> None:
             if isinstance(d, Future):
                 depends.extend([d])
 
@@ -620,20 +622,23 @@ class DataFlowKernel(object):
 
         return depends
 
-    def sanitize_and_wrap(self, task_id, args, kwargs):
+
+    def sanitize_and_wrap(self, task_id: int, args: Sequence[Any], kwargs: Dict[str, Any]) -> Tuple[List[Any], Dict[str, Any], List[Exception]]:
         """This function should be called only when all the futures we track have been resolved.
 
         If the user hid futures a level below, we will not catch
         it, and will (most likely) result in a type error.
 
         Args:
-             task_id (uuid str) : Task id
-             func (Function) : App function
+             task_id (int) : Task id
              args (List) : Positional args to app function
              kwargs (Dict) : Kwargs to app function
 
         Return:
              partial function evaluated with all dependencies in  args, kwargs and kwargs['inputs'] evaluated.
+
+
+        TODO: mypy note: we take a *tuple* of args but return a *list* of args. That's an (unintentional?) change of type of arg structure which leads me to try to represent the args in TaskRecord as a Sequence 
 
         """
         dep_failures = []
@@ -680,7 +685,7 @@ class DataFlowKernel(object):
 
         return new_args, kwargs, dep_failures
 
-    def submit(self, func, *args, executors: Union[str, List[str]] ='all', fn_hash: Optional[str] =None, cache: bool =False, **kwargs) -> AppFuture:
+    def submit(self, func: Callable, *args: Sequence[Any], executors: Union[str, List[str]] ='all', fn_hash: Optional[str] =None, cache: bool =False, **kwargs: Any) -> AppFuture:
         """Add task to the dataflow system.
 
         If the app task has the executors attributes not set (default=='all')
@@ -801,7 +806,7 @@ class DataFlowKernel(object):
 
         for d in depends:
 
-            def callback_adapter(dep_fut):
+            def callback_adapter(dep_fut: Future) -> None:
                 self.launch_if_ready(task_id)
 
             try:
@@ -820,7 +825,7 @@ class DataFlowKernel(object):
     # and a drain function might look like this.
     # If tasks have their states changed, this won't work properly
     # but we can validate that...
-    def log_task_states(self):
+    def log_task_states(self) -> None:
         logger.info("Summary of tasks in DFK:")
 
         total_summarised = 0
@@ -829,7 +834,7 @@ class DataFlowKernel(object):
         for tid in self.tasks:
             keytasks.append((self.tasks[tid]['status'], tid))
 
-        def first(t):
+        def first(t: Sequence[Any]) -> Any:
             return t[0]
 
         sorted_keytasks = sorted(keytasks, key=first)
@@ -861,7 +866,7 @@ class DataFlowKernel(object):
 
         logger.info("End of summary")
 
-    def _create_remote_dirs_over_channel(self, provider, channel):
+    def _create_remote_dirs_over_channel(self, provider: ExecutionProvider, channel: Channel) -> None:
         """ Create script directories across a channel
 
         Parameters
@@ -908,11 +913,11 @@ class DataFlowKernel(object):
         if hasattr(self, 'flowcontrol') and isinstance(self.flowcontrol, FlowControl):
             self.flowcontrol.strategy.add_executors(executors)
 
-    def atexit_cleanup(self):
+    def atexit_cleanup(self) -> None:
         if not self.cleanup_called:
             self.cleanup()
 
-    def wait_for_current_tasks(self):
+    def wait_for_current_tasks(self) -> None:
         """Waits for all tasks in the task list to be completed, by waiting for their
         AppFuture to be completed. This method will not necessarily wait for any tasks
         added after cleanup has started (such as data stageout?)
@@ -1118,7 +1123,7 @@ class DataFlowKernel(object):
                                                                                   len(memo_lookup_table.keys())))
         return memo_lookup_table
 
-    def load_checkpoints(self, checkpointDirs):
+    def load_checkpoints(self, checkpointDirs: Optional[List[str]]) -> 'Dict[str, Future[Any]]':
         """Load checkpoints from the checkpoint files into a dictionary.
 
         The results are used to pre-populate the memoizer's lookup_table
@@ -1148,16 +1153,16 @@ class DataFlowKernelLoader(object):
     need to instantiate this class.
     """
 
-    _dfk = None # type: DataFlowKernel
+    _dfk = None # type: Optional[DataFlowKernel]
 
     @classmethod
-    def clear(cls):
+    def clear(cls) -> None:
         """Clear the active DataFlowKernel so that a new one can be loaded."""
         cls._dfk = None
 
     @classmethod
     @typeguard.typechecked
-    def load(cls, config: Optional[Config] = None):
+    def load(cls, config: Optional[Config] = None) -> DataFlowKernel:
         """Load a DataFlowKernel.
 
         Args:
@@ -1169,15 +1174,20 @@ class DataFlowKernelLoader(object):
         if cls._dfk is not None:
             raise RuntimeError('Config has already been loaded')
 
+        #  using new_dfk as an intermediate variable allows it to have
+        #  the type DataFlowKernel, which is stricter than the type of
+        #  cls._dfk : Optional[DataFlowKernel] and so we can return the
+        #  correct type.
         if config is None:
-            cls._dfk = DataFlowKernel(Config())
+            new_dfk = DataFlowKernel(Config())
         else:
-            cls._dfk = DataFlowKernel(config)
+            new_dfk = DataFlowKernel(config)
 
-        return cls._dfk
+        cls._dfk = new_dfk
+        return new_dfk
 
     @classmethod
-    def wait_for_current_tasks(cls):
+    def wait_for_current_tasks(cls) -> None:
         """Waits for all tasks in the task list to be completed, by waiting for their
         AppFuture to be completed. This method will not necessarily wait for any tasks
         added after cleanup has started such as data stageout.

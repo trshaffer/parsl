@@ -3,7 +3,7 @@ import logging
 from parsl.executors.serialize.serialize import serialize_object
 from parsl.dataflow.taskrecord import TaskRecord
 
-from typing import Dict, Any, Tuple, Union, TYPE_CHECKING
+from typing import Dict, Any, Optional, Tuple, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from parsl import DataFlowKernel # import loop at runtime - needed for typechecking - TODO turn into "if typing:"
@@ -86,26 +86,23 @@ class Memoizer(object):
         hashedsum = hashlib.md5(x).hexdigest()
         return hashedsum
 
-    def check_memo(self, task_id: bool, task: TaskRecord) -> 'Tuple[bool, Union[None, Future[Any]]]':
+    def check_memo(self, task_id: int, task: TaskRecord) -> 'Optional[Future[Any]]':
         """Create a hash of the task and its inputs and check the lookup table for this hash.
 
-        If present, the results are returned. The result is a tuple indicating whether a memo
-        exists and the result, since a None result is possible and could be confusing.
-        This seems like a reasonable option without relying on a cache_miss exception.
+        If present, the results are returned.
 
         Args:
             - task(task) : task from the dfk.tasks table
 
         Returns:
             Tuple of the following:
-            - present (Bool): Is this present in the memo_lookup_table
-            - Result (Py Obj): Result of the function if present in table
+            - Result (Py Obj): Result of the function if present in table, wrapped in a Future
 
         This call will also set task['hashsum'] to the unique hashsum for the func+inputs.
         """
         if not self.memoize or not task['memoize']:
             task['hashsum'] = None
-            return False, None
+            return None
 
         hashsum = self.make_hash(task)
         present = False
@@ -116,7 +113,7 @@ class Memoizer(object):
             logger.info("Task %s using result from cache", task_id)
 
         task['hashsum'] = hashsum
-        return present, result
+        return result
 
     def hash_lookup(self, hashsum: str) -> 'Future[Any]':
         """Lookup a hash in the memoization table.
@@ -132,7 +129,7 @@ class Memoizer(object):
         """
         return self.memo_lookup_table[hashsum]
 
-    def update_memo(self, task_id: str, task: 'TaskRecord', r: 'Future[Any]') -> None:
+    def update_memo(self, task_id: int, task: 'TaskRecord', r: 'Future[Any]') -> None:
         """Updates the memoization lookup table with the result from a task.
 
         Args:
