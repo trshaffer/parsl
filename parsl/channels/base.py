@@ -45,7 +45,7 @@ class Channel(metaclass=ABCMeta):
         pass
 
     @abstractproperty
-    def script_dir(self):
+    def script_dir(self) -> str:
         ''' This is a property. Returns the directory assigned for storing all internal scripts such as
         scheduler submit scripts. This is usually where error logs from the scheduler would reside on the
         channel destination side.
@@ -60,11 +60,11 @@ class Channel(metaclass=ABCMeta):
 
     # DFK expects to be able to modify this, so it needs to be in the abstract class
     @script_dir.setter
-    def script_dir(self, value):
+    def script_dir(self, value: str) -> None:
         pass
 
     @abstractmethod
-    def execute_no_wait(self, cmd, walltime, envs={}) -> Any:
+    def execute_no_wait(self, cmd: str, walltime: int, envs: Dict[str,str] = {}) -> Any:
         ''' Optional. This is infrequently used.
 
         Args:
@@ -80,7 +80,7 @@ class Channel(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def push_file(self, source, dest_dir) -> str:
+    def push_file(self, source: str, dest_dir: str) -> str:
         ''' Channel will take care of moving the file from source to the destination
         directory
 
@@ -94,7 +94,7 @@ class Channel(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def close(self):
+    def close(self) -> bool:
         ''' Closes the channel. Clean out any auth credentials.
 
         Args:
@@ -106,8 +106,9 @@ class Channel(metaclass=ABCMeta):
         '''
         pass
 
+    # probable bug here - that mode default should maybe be octal 511?
     @abstractmethod
-    def makedirs(self, path, mode=511, exist_ok=False):
+    def makedirs(self, path: str, mode: int=511, exist_ok: bool=False) -> None:
         """Create a directory.
 
         If intermediate directories do not exist, they will be created.
@@ -124,7 +125,7 @@ class Channel(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def isdir(self, path):
+    def isdir(self, path: str) -> bool:
         """Return true if the path refers to an existing directory.
 
         Parameters
@@ -135,7 +136,7 @@ class Channel(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def abspath(self, path):
+    def abspath(self, path: str) -> str:
         """Return the absolute path.
 
         Parameters
