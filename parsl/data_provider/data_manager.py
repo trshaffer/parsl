@@ -8,7 +8,7 @@ from parsl.executors.base import ParslExecutor
 from parsl.data_provider.globus import get_globus
 from parsl.app.app import python_app
 
-from typing import List
+from typing import cast, List
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +81,10 @@ class DataManager(ParslExecutor):
         from parsl.dataflow.dflow import DataFlowKernelLoader
         dfk = DataFlowKernelLoader.dfk()
 
-        return dfk.executors['data_manager']
+        # i think in my data management patch stack I move this out of
+        # being in the executors list
+
+        return cast(DataManager, dfk.executors['data_manager'])
 
     def __init__(self, dfk: "DataFlowKernel", max_threads=10) -> None:
         """Initialize the DataManager.

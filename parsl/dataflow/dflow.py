@@ -1107,7 +1107,7 @@ class DataFlowKernelLoader(object):
         cls.dfk().wait_for_current_tasks()
 
     @classmethod
-    def dfk(cls):
+    def dfk(cls) -> DataFlowKernel:
         """Return the currently-loaded DataFlowKernel."""
         if cls._dfk is None:
             raise RuntimeError('Must first load config')

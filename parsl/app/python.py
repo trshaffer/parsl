@@ -11,6 +11,8 @@ from parsl.dataflow.dflow import DataFlowKernelLoader
 
 logger = logging.getLogger(__name__)
 
+from typing import Any, List
+from concurrent.futures import Future
 
 class PythonApp(AppBase):
     """Extends AppBase to cover the Python App."""
@@ -54,7 +56,7 @@ class PythonApp(AppBase):
         # logger.debug("App[{}] assigned Task[{}]".format(self.func.__name__,
         #                                                 app_fut.tid))
         out_futs = [DataFuture(app_fut, o, tid=app_fut.tid)
-                    for o in kwargs.get('outputs', [])]
+                    for o in kwargs.get('outputs', [])]  # type: List[Future[Any]]
         app_fut._outputs = out_futs
 
         return app_fut

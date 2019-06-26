@@ -1,7 +1,10 @@
 import logging
 from functools import update_wrapper
 from inspect import signature, Parameter
-from typing import Optional
+
+# for typing
+from typing import Any, List, Optional
+from concurrent.futures import Future
 
 from parsl.app.errors import wrap_error
 from parsl.app.futures import DataFuture
@@ -163,7 +166,7 @@ class BashApp(AppBase):
                              **self.kwargs)
 
         out_futs = [DataFuture(app_fut, o, tid=app_fut.tid)
-                    for o in kwargs.get('outputs', [])]
+                    for o in kwargs.get('outputs', [])]  # type: List[Future[Any]]
         app_fut._outputs = out_futs
 
         return app_fut
