@@ -240,7 +240,7 @@ class CondorProvider(RepresentationMixin, ClusterProvider):
         except Exception as e:
             raise ScaleOutFailed(self.label, str(e))
 
-        job_id = []
+        job_id = []  # type: List[str]
 
         if retcode == 0:
             for line in stdout.split('\n'):
