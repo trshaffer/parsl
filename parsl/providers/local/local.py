@@ -3,11 +3,14 @@ import os
 import signal
 import time
 
+from parsl.channels.base import Channel
 from parsl.channels import LocalChannel
 from parsl.launchers import SingleNodeLauncher
 from parsl.providers.provider_base import ExecutionProvider
 from parsl.providers.error import SchedulerMissingArgs, ScriptPathError
 from parsl.utils import RepresentationMixin
+
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +30,7 @@ translate_table = {
 
 
 class LocalProvider(ExecutionProvider, RepresentationMixin):
+
     """ Local Execution Provider
 
     This provider is used to provide execution resources from the localhost.
@@ -49,7 +53,7 @@ class LocalProvider(ExecutionProvider, RepresentationMixin):
     """
 
     def __init__(self,
-                 channel=LocalChannel(),
+                 channel: Channel = LocalChannel(),
                  nodes_per_block=1,
                  launcher=SingleNodeLauncher(),
                  init_blocks=4,
@@ -189,8 +193,8 @@ class LocalProvider(ExecutionProvider, RepresentationMixin):
 
         self._write_submit_script(wrap_command, script_path)
 
-        job_id = None
-        proc = None
+        job_id = None  # type: Any
+        proc = None  # type: Any
         remote_pid = None
         if (self.move_files is None and not isinstance(self.channel, LocalChannel)) or (self.move_files):
             logger.debug("Pushing start script")
@@ -208,7 +212,6 @@ class LocalProvider(ExecutionProvider, RepresentationMixin):
             if job_id is None:
                 logger.warning("Channel failed to start remote command/retrieve PID")
         else:
-
             try:
                 job_id, proc = self.channel.execute_no_wait('bash {0}'.format(script_path), self.cmd_timeout)
             except Exception as e:

@@ -79,7 +79,7 @@ class LocalChannel(Channel, RepresentationMixin):
 
         return (retcode, stdout.decode("utf-8"), stderr.decode("utf-8"))
 
-    def execute_no_wait(self, cmd, walltime, envs={}) -> Optional[Tuple[int, subprocess.Popen]]:
+    def execute_no_wait(self, cmd, walltime, envs={}) -> Tuple[int, subprocess.Popen]:
         ''' Synchronously execute a commandline string on the shell.
 
         Args:
