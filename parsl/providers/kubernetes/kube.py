@@ -9,7 +9,7 @@ from parsl.providers.provider_base import ExecutionProvider
 from parsl.utils import RepresentationMixin
 
 import typeguard
-from typing import List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 try:
     from kubernetes import client, config
@@ -94,7 +94,7 @@ class KubernetesProvider(ExecutionProvider, RepresentationMixin):
         self.kube_client = client.CoreV1Api()
 
         # Dictionary that keeps track of jobs, keyed on job_id
-        self.resources = {}
+        self.resources = {}  # type: Dict[str, Dict[str, Any]]
 
     def submit(self, cmd_string, blocksize, tasks_per_node, job_name="parsl") -> Optional[str]:
         """ Submit a job
