@@ -119,21 +119,21 @@ class ParslExecutor(metaclass=ABCMeta):
         self._run_dir = value
 
     @property
-    def hub_address(self):
+    def hub_address(self) -> Optional[str]:
         """Address to the Hub for monitoring.
         """
         return self._hub_address
 
     @hub_address.setter
-    def hub_address(self, value):
+    def hub_address(self, value: Optional[str]) -> None:
         self._hub_address = value
 
     @property
-    def hub_port(self):
+    def hub_port(self) -> Optional[int]:
         """Port to the Hub for monitoring.
         """
         return self._hub_port
 
     @hub_port.setter
-    def hub_port(self, value):
+    def hub_port(self, value: Optional[int]) -> None:
         self._hub_port = value

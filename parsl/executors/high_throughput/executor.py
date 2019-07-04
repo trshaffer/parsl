@@ -188,8 +188,21 @@ class HighThroughputExecutor(ParslExecutor, RepresentationMixin):
 
         self._task_counter = 0
         self.address = address
+
+        # should hub_address, _port be typed as non-Optional?
+        # if so, we can't init them to None, and instead have to leave them as
+        # not existing until such time as they are set by the DFK (and attempting
+        # to use them will always typecheck, but the property accessor is unsafe,
+        # I think, because it assumes the secret _hub_address _hub_port members
+        # are there... though mypy doesn't seem to complain about that?)
+
+        # Even if initialising with None, executor base class, not this class,
+        # is maybe the place to initialise the default values - there's nothing
+        # particularly HTEX-specific about this initialisation
+
         self.hub_address = None  # set to the correct hub address in dfk
         self.hub_port = None  # set to the correct hub port in dfk
+
         self.worker_ports = worker_ports
         self.worker_port_range = worker_port_range
         self.interchange_port_range = interchange_port_range
