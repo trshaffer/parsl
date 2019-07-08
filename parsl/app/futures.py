@@ -10,7 +10,7 @@ import typing
 from concurrent.futures import Future
 
 from parsl.dataflow.futures import AppFuture, _STATE_TO_DESCRIPTION_MAP, FINISHED
-from parsl.app.errors import *
+from parsl.app.errors import NotFutureError
 from parsl.data_provider.files import File
 
 logger = logging.getLogger(__name__)
