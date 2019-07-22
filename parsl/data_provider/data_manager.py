@@ -1,11 +1,11 @@
 import os
 import logging
-import requests
-import ftplib
 import concurrent.futures as cf
 from parsl.data_provider.scheme import GlobusScheme
 from parsl.executors.base import ParslExecutor
+from parsl.data_provider.ftp import _ftp_stage_in_app
 from parsl.data_provider.globus import get_globus
+from parsl.data_provider.http import _http_stage_in_app
 from parsl.app.app import python_app
 
 from typing import cast, List
@@ -25,66 +25,12 @@ if TYPE_CHECKING:
 # but only ever dosomething with the first elemtn of that list - 
 # not handling the multiple element (or 0 element) case
 
-
-# In both _http_stage_in and _ftp_stage_in the handling of
-# file.local_path is rearranged: file.local_path is an optional
-# string, so even though we are setting it, it is still optional
-# and so cannot be used as a parameter to open.
-
-def _http_stage_in(working_dir: str, outputs: "List[File]" =[]) -> None:
-    file = outputs[0]
-    if working_dir:
-        os.makedirs(working_dir, exist_ok=True)
-        local_path = os.path.join(working_dir, file.filename)
-    else:
-        local_path = file.filename
-
-    file.local_path = local_path
-
-    resp = requests.get(file.url, stream=True)
-
-    with open(local_path, 'wb') as f:
-        for chunk in resp.iter_content(chunk_size=1024):
-            if chunk:
-                f.write(chunk)
-
-
-def _ftp_stage_in(working_dir: str, outputs: "List[File]"=[]) -> None:
-    file = outputs[0]
-    if working_dir:
-        os.makedirs(working_dir, exist_ok=True)
-        local_path = os.path.join(working_dir, file.filename)
-    else:
-        local_path = file.filename
-
-    file.local_path = local_path
-
-    with open(local_path, 'wb') as f:
-        ftp = ftplib.FTP(file.netloc)
-        ftp.login()
-        ftp.cwd(os.path.dirname(file.path))
-        ftp.retrbinary('RETR {}'.format(file.filename), f.write)
-        ftp.quit()
-
-
 class DataManager(ParslExecutor):
     """The DataManager is responsible for transferring input and output data.
 
     It uses the Executor interface, where staging tasks are submitted
     to it, and DataFutures are returned.
     """
-
-    @classmethod
-    def get_data_manager(cls) -> "DataManager":  # quoted because DataManager hasn't finished being defined here (we're in the middle of defining it...?) and that upsets runtime (although not type checking)
-        """Return the DataManager of the currently loaded DataFlowKernel.
-        """
-        from parsl.dataflow.dflow import DataFlowKernelLoader
-        dfk = DataFlowKernelLoader.dfk()
-
-        # i think in my data management patch stack I move this out of
-        # being in the executors list
-
-        return cast(DataManager, dfk.executors['data_manager'])
 
     def __init__(self, dfk: "DataFlowKernel", max_threads=10) -> None:
         """Initialize the DataManager.
@@ -172,19 +118,16 @@ class DataManager(ParslExecutor):
             - self
             - file (File) : file to stage in
             - executor (str) : an executor the file is going to be staged in to.
-                                If the executor argument is not specified for a file
-                                with 'globus' scheme, the file will be staged in to
-                                the first executor with the "globus" key in a config.
         """
 
         if file.scheme == 'ftp':
             working_dir = self.dfk.executors[executor].working_dir
-            stage_in_app = self._ftp_stage_in_app(executor=executor)
+            stage_in_app = _ftp_stage_in_app(self, executor=executor)
             app_fut = stage_in_app(working_dir, outputs=[file])
             return app_fut._outputs[0]
         elif file.scheme == 'http' or file.scheme == 'https':
             working_dir = self.dfk.executors[executor].working_dir
-            stage_in_app = self._http_stage_in_app(executor=executor)
+            stage_in_app = _http_stage_in_app(self, executor=executor)
             app_fut = stage_in_app(working_dir, outputs=[file])
             return app_fut._outputs[0]
         elif file.scheme == 'globus':
@@ -194,12 +137,6 @@ class DataManager(ParslExecutor):
             return app_fut._outputs[0]
         else:
             raise Exception('Staging in with unknown file scheme {} is not supported'.format(file.scheme))
-
-    def _ftp_stage_in_app(self, executor):
-        return python_app(executors=[executor], data_flow_kernel=self.dfk)(_ftp_stage_in)
-
-    def _http_stage_in_app(self, executor):
-        return python_app(executors=[executor], data_flow_kernel=self.dfk)(_http_stage_in)
 
     def _globus_stage_in_app(self):
         return python_app(executors=['data_manager'], data_flow_kernel=self.dfk)(self._globus_stage_in)
@@ -226,9 +163,6 @@ class DataManager(ParslExecutor):
             - self
             - file (File) - file to stage out
             - executor (str) - Which executor the file is going to be staged out from.
-                                If the executor argument is not specified for a file
-                                with the 'globus' scheme, the file will be staged in to
-                                the first executor with the "globus" key in a config.
         """
 
         if file.scheme == 'http' or file.scheme == 'https':
