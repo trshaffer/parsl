@@ -3,6 +3,8 @@ import multiprocessing
 import logging
 from concurrent.futures import Future
 
+from typing import Any, Dict, List, Optional, Set
+
 import os
 import pickle
 import queue
@@ -176,6 +178,7 @@ def WorkQueueSubmitThread(task_queue=multiprocessing.Queue(),
             except Exception as e:
                 logger.error("Unable to create task: {}".format(e))
 
+                msg : Optional[Dict[str, Any]]
                 msg = {"tid": parsl_id,
                        "result_received": False,
                        "reason": "Workqueue Task Start Failure",
@@ -358,9 +361,9 @@ class WorkQueueExecutor(ParslExecutor):
 
         self.label = label
         self.managed = managed
-        self.task_queue = multiprocessing.Queue()
-        self.collector_queue = multiprocessing.Queue()
-        self.tasks = {}
+        self.task_queue = multiprocessing.Queue()  # type: multiprocessing.Queue[Any]
+        self.collector_queue = multiprocessing.Queue()  # type: multiprocessing.Queue[Any]
+        self.tasks = {}  # type: Dict[Any, Any]
         self.port = port
         self.task_counter = -1
         self.scaling_enabled = False
@@ -371,9 +374,9 @@ class WorkQueueExecutor(ParslExecutor):
         self.init_command = init_command
         self.shared_fs = shared_fs
         self.working_dir = working_dir
-        self.used_names = {}
-        self.shared_files = set()
-        self.registered_files = set()
+        self.used_names = {}  # type: Dict[Any, Any]
+        self.shared_files = set()  # type: Set[Any]
+        self.registered_files = set()  # type: Set[Any]
         self.worker_output = see_worker_output
         self.full = True
         self.cancel_value = multiprocessing.Value('i', 1)
@@ -473,7 +476,7 @@ class WorkQueueExecutor(ParslExecutor):
 
         input_files = []
         output_files = []
-        std_files = []
+        std_files = []  # type: List[Any]
 
         func_inputs = kwargs.get("inputs", [])
         for inp in func_inputs:
@@ -509,7 +512,7 @@ class WorkQueueExecutor(ParslExecutor):
         if not self.submit_process.is_alive():
             raise ExecutorError(self, "Workqueue Submit Process is not alive")
 
-        fu = Future()
+        fu = Future()  # type: Future[Any]
         self.tasks_lock.acquire()
         self.tasks[str(task_id)] = fu
         self.tasks_lock.release()

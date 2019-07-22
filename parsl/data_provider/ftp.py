@@ -3,15 +3,23 @@ import os
 
 from parsl import python_app
 
+# In both _http_stage_in and _ftp_stage_in the handling of
+# file.local_path is rearranged: file.local_path is an optional
+# string, so even though we are setting it, it is still optional
+# and so cannot be used as a parameter to open.
+
 
 def _ftp_stage_in(working_dir, outputs=[]):
     file = outputs[0]
     if working_dir:
         os.makedirs(working_dir, exist_ok=True)
-        file.local_path = os.path.join(working_dir, file.filename)
+        local_path = os.path.join(working_dir, file.filename)
     else:
-        file.local_path = file.filename
-    with open(file.local_path, 'wb') as f:
+        local_path = file.filename
+
+    file.local_path = local_path
+
+    with open(local_path, 'wb') as f:
         ftp = ftplib.FTP(file.netloc)
         ftp.login()
         ftp.cwd(os.path.dirname(file.path))

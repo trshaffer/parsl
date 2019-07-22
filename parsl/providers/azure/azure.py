@@ -11,6 +11,8 @@ from parsl.providers.error import OptionalModuleMissing
 from parsl.utils import RepresentationMixin
 from parsl.launchers import SingleNodeLauncher
 
+from typing import Any, List
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -146,7 +148,7 @@ class AzureProvider(ExecutionProvider, RepresentationMixin):
         self.launcher = launcher
         self.linger = linger
         self.resources = {}
-        self.instances = []
+        self.instances = []  # type: List[Any]
 
         env_specified = os.getenv("AZURE_CLIENT_ID") is not None and os.getenv(
             "AZURE_CLIENT_SECRET") is not None and os.getenv(
