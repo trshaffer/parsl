@@ -8,7 +8,7 @@ class Launcher(RepresentationMixin, metaclass=ABCMeta):
     """ Launcher base class to enforce launcher interface
     """
     @abstractmethod
-    def __call__(self, command: str, tasks_per_node: int, nodes_per_block: int, walltime: Optional[int]=None) -> str:
+    def __call__(self, command: str, tasks_per_node: int, nodes_per_block: int) -> str:
         """ Wraps the command with the Launcher calls.
         """
         pass
@@ -18,14 +18,12 @@ class SimpleLauncher(Launcher):
     """ Does no wrapping. Just returns the command as-is
     """
 
-    def __call__(self, command: str, tasks_per_node, nodes_per_block, walltime=None) -> str:
+    def __call__(self, command: str, tasks_per_node, nodes_per_block) -> str:
         """
         Args:
         - command (string): The command string to be launched
         - task_block (string) : bash evaluated string.
 
-        KWargs:
-        - walltime (int) : This is not used by this launcher.
         """
         return command
 
@@ -37,14 +35,12 @@ class SingleNodeLauncher(Launcher):
     task_blocks to an integer or to a bash expression the number of invocations
     of the command to be launched can be controlled.
     """
-    def __call__(self, command, tasks_per_node, nodes_per_block, walltime=None) -> str:
+    def __call__(self, command, tasks_per_node, nodes_per_block) -> str:
         """
         Args:
         - command (string): The command string to be launched
         - task_block (string) : bash evaluated string.
 
-        KWargs:
-        - walltime (int) : This is not used by this launcher.
         """
         task_blocks = tasks_per_node * nodes_per_block
 
@@ -79,14 +75,12 @@ class GnuParallelLauncher(Launcher):
       target nodes.
     - The provider makes available the $PBS_NODEFILE environment variable
     """
-    def __call__(self, command, tasks_per_node, nodes_per_block, walltime=None) -> str:
+    def __call__(self, command, tasks_per_node, nodes_per_block) -> str:
         """
         Args:
         - command (string): The command string to be launched
         - task_block (string) : bash evaluated string.
 
-        KWargs:
-        - walltime (int) : This is not used by this launcher.
         """
         task_blocks = tasks_per_node * nodes_per_block
 
@@ -137,14 +131,12 @@ class MpiExecLauncher(Launcher):
     - mpiexec is installed and can be located in $PATH
     - The provider makes available the $PBS_NODEFILE environment variable
     """
-    def __call__(self, command, tasks_per_node, nodes_per_block, walltime=None) -> str:
+    def __call__(self, command, tasks_per_node, nodes_per_block) -> str:
         """
         Args:
         - command (string): The command string to be launched
         - task_block (string) : bash evaluated string.
 
-        KWargs:
-        - walltime (int) : This is not used by this launcher.
         """
         task_blocks = tasks_per_node * nodes_per_block
 
@@ -186,14 +178,12 @@ class MpiRunLauncher(Launcher):
     def __init__(self, bash_location='/bin/bash'):
         self.bash_location = bash_location
 
-    def __call__(self, command, tasks_per_node, nodes_per_block, walltime=None):
+    def __call__(self, command, tasks_per_node, nodes_per_block):
         """
         Args:
         - command (string): The command string to be launched
         - task_block (string) : bash evaluated string.
 
-        KWargs:
-        - walltime (int) : This is not used by this launcher.
         """
         task_blocks = tasks_per_node * nodes_per_block
 
@@ -228,14 +218,12 @@ class SrunLauncher(Launcher):
         """
         self.overrides = overrides
 
-    def __call__(self, command, tasks_per_node, nodes_per_block, walltime=None) -> str:
+    def __call__(self, command, tasks_per_node, nodes_per_block) -> str:
         """
         Args:
         - command (string): The command string to be launched
         - task_block (string) : bash evaluated string.
 
-        KWargs:
-        - walltime (int) : This is not used by this launcher.
         """
         task_blocks = tasks_per_node * nodes_per_block
         x = '''export CORES=$SLURM_CPUS_ON_NODE
@@ -276,14 +264,12 @@ class SrunMPILauncher(Launcher):
         """
         self.overrides = overrides
 
-    def __call__(self, command, tasks_per_node, nodes_per_block, walltime=None) -> str:
+    def __call__(self, command, tasks_per_node, nodes_per_block) -> str:
         """
         Args:
         - command (string): The command string to be launched
         - task_block (string) : bash evaluated string.
 
-        KWargs:
-        - walltime (int) : This is not used by this launcher.
         """
         task_blocks = tasks_per_node * nodes_per_block
         x = '''export CORES=$SLURM_CPUS_ON_NODE
@@ -343,15 +329,13 @@ class AprunLauncher(Launcher):
         """
         self.overrides = overrides
 
-    def __call__(self, command, tasks_per_node, nodes_per_block, walltime=None) -> str:
+    def __call__(self, command, tasks_per_node, nodes_per_block) -> str:
         """
         Args:
         - command (string): The command string to be launched
         - tasks_per_node (int) : Workers to launch per node
         - nodes_per_block (int) : Number of nodes in a block
 
-        KWargs:
-        - walltime (int) : This is not used by this launcher.
         """
 
         tasks_per_block = tasks_per_node * nodes_per_block
