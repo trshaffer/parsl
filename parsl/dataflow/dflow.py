@@ -532,7 +532,13 @@ class DataFlowKernel(object):
 
         def check_dep(d):
             if isinstance(d, Future):
-                if self.tasks[d.tid]['status'] not in FINAL_STATES:
+                # Future does not have a .tid attribute in the type system
+                # That will manifest as a bug in real life if a user passes in a
+                # non-parsl Future.
+                # This might be addressed by asking the future if it is in a final
+                # state, although would change the order of things being executed
+                # perhaps in a way that might be racy/broken?
+                if self.tasks[d.tid]['status'] not in FINAL_STATES: # type: ignore
                     unfinished_depends.extend([d])
                 depends.extend([d])
 
