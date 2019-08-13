@@ -8,7 +8,7 @@ from parsl import python_app
 # string, so even though we are setting it, it is still optional
 # and so cannot be used as a parameter to open.
 
-def _http_stage_in(working_dir, outputs=[]):
+def _http_stage_in(working_dir, outputs=[], staging_inhibit_output=True):
     file = outputs[0]
     if working_dir:
         os.makedirs(working_dir, exist_ok=True)

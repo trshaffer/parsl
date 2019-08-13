@@ -9,7 +9,7 @@ from parsl import python_app
 # and so cannot be used as a parameter to open.
 
 
-def _ftp_stage_in(working_dir, outputs=[]):
+def _ftp_stage_in(working_dir, outputs=[], staging_inhibit_output=True):
     file = outputs[0]
     if working_dir:
         os.makedirs(working_dir, exist_ok=True)
