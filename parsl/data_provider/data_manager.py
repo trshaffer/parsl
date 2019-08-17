@@ -10,6 +10,8 @@ logger = logging.getLogger(__name__)
 from typing import TYPE_CHECKING
 from typing import Optional
 
+from concurrent.futures import Future
+
 if TYPE_CHECKING:
     from parsl.app.futures import DataFuture
     from parsl.data_provider.files import File # for mypy
@@ -83,7 +85,7 @@ class DataManager(object):
         else:
             raise Exception('Staging in with unknown file scheme {} is not supported'.format(file.scheme))
 
-    def stage_out(self, file: "File", executor: Optional[str]) -> "DataFuture":
+    def stage_out(self, file: "File", executor: Optional[str], app_fu: Future) -> "DataFuture":
         """Transport the file from the local filesystem to the remote Globus endpoint.
 
         This function returns a DataFuture.
@@ -100,7 +102,8 @@ class DataManager(object):
             raise Exception('FTP file staging out is not supported')
         elif file.scheme == 'globus':
             globus_scheme = _get_globus_scheme(self.dfk, executor)
+            globus_scheme._update_stage_out_local_path(file, executor, self.dfk)
             stage_out_app = globus_scheme._globus_stage_out_app(executor=executor, dfk=self.dfk)
-            return stage_out_app(inputs=[file])
+            return stage_out_app(app_fu, inputs=[file])
         else:
             raise Exception('Staging out with unknown file scheme {} is not supported'.format(file.scheme))
