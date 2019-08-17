@@ -11,7 +11,7 @@ from multiprocessing import Process, Queue
 from parsl.utils import RepresentationMixin
 
 from parsl.monitoring.message_type import MessageType
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 _db_manager_excepts: Optional[Exception]
 
@@ -462,8 +462,8 @@ def monitor(pid, task_id, monitoring_hub_url, run_id, sleep_dur=10):
     pm.cpu_percent()
 
     first_msg = True
-    children_user_time = {}
-    children_system_time = {}
+    children_user_time = {}  # type: Dict[int, float]
+    children_system_time = {}  # type: Dict[int, float]
     total_children_user_time = 0.0
     total_children_system_time = 0.0
     while True:

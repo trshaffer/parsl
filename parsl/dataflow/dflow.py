@@ -694,7 +694,7 @@ class DataFlowKernel(object):
                     'status': States.unsched,
                     'id': task_id,
                     'time_submitted': None,
-                    'time_returned': None}
+                    'time_returned': None}  # type: Dict[str, Any]
 
         app_fu = AppFuture(task_def)
 
