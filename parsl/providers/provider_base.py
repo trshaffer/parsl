@@ -25,6 +25,8 @@ class ExecutionProvider(metaclass=ABCMeta):
                                 |
                                 +-------------------
      """
+    _cores_per_node = None
+    _mem_per_node = None
 
     min_blocks: int
     max_blocks: int
@@ -111,7 +113,42 @@ class ExecutionProvider(metaclass=ABCMeta):
         pass
 
 
+    @property
+    def mem_per_node(self):
+        """Real memory to provision per node in GB.
+
+        Providers which set this property should ask for mem_per_node of memory
+        when provisioning resources, and set the corresponding environment
+        variable PARSL_MEMORY_GB before executing submitted commands.
+
+        If this property is set, executors may use it to calculate how many tasks can
+        run concurrently per node. This information is used by dataflow.Strategy to estimate
+        the resources required to run all outstanding tasks.
+        """
+        return self._mem_per_node
+
+    @mem_per_node.setter
+    def mem_per_node(self, value):
+        self._mem_per_node = value
+
+    @property
+    def cores_per_node(self):
+        """Number of cores to provision per node.
+
+        Providers which set this property should ask for cores_per_node cores
+        when provisioning resources, and set the corresponding environment
+        variable PARSL_CORES before executing submitted commands.
+
+        If this property is set, executors may use it to calculate how many tasks can
+        run concurrently per node. This information is used by dataflow.Strategy to estimate
+        the resources required to run all outstanding tasks.
+        """
+        return self._cores_per_node
+
+    @cores_per_node.setter
+    def cores_per_node(self, value):
+        self._cores_per_node = value
+
 class Channeled():
    """A marker type to indicate that parsl should manage Channels for this provider"""
    channel: Channel
-

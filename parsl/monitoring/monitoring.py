@@ -103,7 +103,9 @@ class UDPRadio(object):
             Arbitrary pickle-able object that is to be sent
 
         Returns:
-            # bytes sent
+            # bytes sent,
+         or False if there was a timeout during send,
+         or None if there was an exception during pickling
         """
         x = 0
         try:
@@ -202,10 +204,7 @@ class MonitoringHub(RepresentationMixin):
         if self.logdir is None:
             self.logdir = "."
 
-        try:
-            os.makedirs(self.logdir)
-        except FileExistsError:
-            pass
+        os.makedirs(self.logdir, exist_ok=True)
 
         # Initialize the ZMQ pipe to the Parsl Client
         self.logger = start_file_logger("{}/monitoring_hub.log".format(self.logdir),
@@ -270,7 +269,7 @@ class MonitoringHub(RepresentationMixin):
         if self._dfk_channel and self.monitoring_hub_active:
             self.monitoring_hub_active = False
             self._dfk_channel.close()
-            self.logger.info("Waiting Hub to receive all messages and terminate")
+            self.logger.info("Waiting for Hub to receive all messages and terminate")
             try:
                 msg = self.stop_q.get()
                 self.logger.info("Received {} from Hub".format(msg))
@@ -339,10 +338,7 @@ class Hub(object):
             The amount of time in seconds to terminate the hub without receiving any messages, after the last dfk workflow message is received.
 
         """
-        try:
-            os.makedirs(logdir)
-        except FileExistsError:
-            pass
+        os.makedirs(logdir, exist_ok=True)
         self.logger = start_file_logger("{}/hub.log".format(logdir),
                                         name="hub",
                                         level=logging_level)

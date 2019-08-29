@@ -143,10 +143,7 @@ class Interchange(object):
 
         """
         self.logdir = logdir
-        try:
-            os.makedirs(self.logdir)
-        except FileExistsError:
-            pass
+        os.makedirs(self.logdir, exist_ok=True)
 
         start_file_logger("{}/interchange.log".format(self.logdir), level=logging_level)
         logger.debug("Initializing Interchange process")
@@ -384,7 +381,7 @@ class Interchange(object):
                         msg['reg_time'] = datetime.datetime.strptime(msg['reg_time'], "%Y-%m-%d %H:%M:%S")
                         reg_flag = True
                     except Exception:
-                        logger.warning("[MAIN] Got Exception reading registration message from manager:{}".format(
+                        logger.warning("[MAIN] Got Exception reading registration message from manager: {}".format(
                             manager), exc_info=True)
                         logger.debug("[MAIN] Message :\n{}\n".format(message[0]))
 
