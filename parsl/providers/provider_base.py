@@ -25,8 +25,8 @@ class ExecutionProvider(metaclass=ABCMeta):
                                 |
                                 +-------------------
      """
-    _cores_per_node = None
-    _mem_per_node = None
+    _cores_per_node = None  # type: Optional[float]
+    _mem_per_node = None  # type: Optional[float]
 
     min_blocks: int
     max_blocks: int
@@ -114,7 +114,7 @@ class ExecutionProvider(metaclass=ABCMeta):
 
 
     @property
-    def mem_per_node(self):
+    def mem_per_node(self) -> Optional[float]:
         """Real memory to provision per node in GB.
 
         Providers which set this property should ask for mem_per_node of memory
@@ -128,11 +128,11 @@ class ExecutionProvider(metaclass=ABCMeta):
         return self._mem_per_node
 
     @mem_per_node.setter
-    def mem_per_node(self, value):
+    def mem_per_node(self, value: float) -> None:
         self._mem_per_node = value
 
     @property
-    def cores_per_node(self):
+    def cores_per_node(self) -> Optional[float]:
         """Number of cores to provision per node.
 
         Providers which set this property should ask for cores_per_node cores
@@ -146,7 +146,7 @@ class ExecutionProvider(metaclass=ABCMeta):
         return self._cores_per_node
 
     @cores_per_node.setter
-    def cores_per_node(self, value):
+    def cores_per_node(self, value: float) -> None:
         self._cores_per_node = value
 
 class Channeled():

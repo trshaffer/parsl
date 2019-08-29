@@ -473,7 +473,7 @@ class DataFlowKernel(object):
         logger.info("Task {} launched on executor {}".format(task_id, executor.label))
         return exec_fu
 
-    def _add_input_deps(self, executor, args, kwargs, func) -> Tuple[Tuple[Any, ...], Any]:
+    def _add_input_deps(self, executor, args, kwargs, func) -> Tuple[Tuple[Any, ...], Any, Any]:
         """Look for inputs of the app that are files. Give the data manager
         the opportunity to replace a file with a data future for that file,
         for example wrapping the result of a staging action.

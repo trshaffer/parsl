@@ -45,7 +45,7 @@ class ParslExecutor(metaclass=ABCMeta):
     status: Any  # what is this? used by strategy
     outstanding: Any  # what is this? used by strategy
     working_dir: Optional[str]
-    storage_access: List[Any]
+    storage_access: Optional[List[Any]]
 
     @abstractmethod
     def start(self) -> None:

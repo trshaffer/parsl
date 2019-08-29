@@ -39,7 +39,7 @@ class ThreadPoolExecutor(ParslExecutor, RepresentationMixin):
         # we allow storage_access to be None now, which means something else to [] now
         # None now means that a default storage access list will be used, while
         # [] is a list with no storage access in it at all
-        self.storage_access = storage_access
+        self.storage_access = storage_access  # type: Optional[List[Any]]
         self.working_dir = working_dir
         self.managed = managed
 
