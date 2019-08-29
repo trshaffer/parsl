@@ -25,7 +25,7 @@ class ExecutionProvider(metaclass=ABCMeta):
                                 |
                                 +-------------------
      """
-    _cores_per_node = None  # type: Optional[float]
+    _cores_per_node = None  # type: Optional[int]
     _mem_per_node = None  # type: Optional[float]
 
     min_blocks: int
@@ -146,7 +146,7 @@ class ExecutionProvider(metaclass=ABCMeta):
         return self._cores_per_node
 
     @cores_per_node.setter
-    def cores_per_node(self, value: float) -> None:
+    def cores_per_node(self, value: int) -> None:
         self._cores_per_node = value
 
 class Channeled():
