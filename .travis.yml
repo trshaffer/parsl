@@ -42,6 +42,7 @@ script:
     - MYPYPATH=$(pwd)/mypy-stubs mypy parsl/tests/configs/
     - MYPYPATH=$(pwd)/mypy-stubs mypy parsl/tests/test*/
     - MYPYPATH=$(pwd)/mypy-stubs mypy parsl/tests/sites/
+    - MYPYPATH=$(pwd)/mypy-stubs mypy parsl/app/ parsl/channels/ parsl/dataflow/ parsl/data_provider/ parsl/launchers parsl/providers/
 
       # do this before any testing, but not in-between tests
     - rm -f .coverage
@@ -63,6 +64,8 @@ script:
     - if [[ "$MPI" == "openmpi" ]]; then ompi_info;    fi
 
     - pip install .[extreme_scale,monitoring]
+
+    - pytest parsl -k "not cleannet" --config parsl/tests/configs/htex_local_alternate.py --cov=parsl --cov-append --cov-report= --random-order
 
     - work_queue_worker localhost 9000 &> /dev/null &
 

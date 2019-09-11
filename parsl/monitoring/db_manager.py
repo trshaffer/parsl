@@ -190,9 +190,6 @@ class Database(object):
             PrimaryKeyConstraint('task_id', 'run_id', 'timestamp'),
         )
 
-    def __del__(self):
-        self.session.close()
-
 
 class DatabaseManager(object):
     def __init__(self,
@@ -223,19 +220,22 @@ class DatabaseManager(object):
         self._kill_event = threading.Event()
         self._priority_queue_pull_thread = threading.Thread(target=self._migrate_logs_to_internal,
                                                             args=(
-                                                                priority_queue, 'priority', self._kill_event,)
+                                                                priority_queue, 'priority', self._kill_event,),
+                                                            name="Monitoring-migrate-priority"
                                                             )
         self._priority_queue_pull_thread.start()
 
         self._node_queue_pull_thread = threading.Thread(target=self._migrate_logs_to_internal,
                                                         args=(
-                                                            node_queue, 'node', self._kill_event,)
+                                                            node_queue, 'node', self._kill_event,),
+                                                        name="Monitoring-migrate-node"
                                                         )
         self._node_queue_pull_thread.start()
 
         self._resource_queue_pull_thread = threading.Thread(target=self._migrate_logs_to_internal,
                                                             args=(
-                                                                resource_queue, 'resource', self._kill_event,)
+                                                                resource_queue, 'resource', self._kill_event,),
+                                                            name="Monitoring-migrate-resource"
                                                             )
         self._resource_queue_pull_thread.start()
 

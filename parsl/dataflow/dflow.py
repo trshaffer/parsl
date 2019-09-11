@@ -9,7 +9,6 @@ import typeguard
 import inspect
 import threading
 import sys
-# import multiprocessing
 import datetime
 
 from getpass import getuser
@@ -173,10 +172,10 @@ class DataFlowKernel(object):
                 else:
                     h, m, s = map(int, config.checkpoint_period.split(':'))
                     checkpoint_period = (h * 3600) + (m * 60) + s
-                    self._checkpoint_timer = Timer(self.checkpoint, interval=checkpoint_period)
+                    self._checkpoint_timer = Timer(self.checkpoint, interval=checkpoint_period, name="Checkpoint")
             except Exception:
                 logger.error("invalid checkpoint_period provided: {0} expected HH:MM:SS".format(config.checkpoint_period))
-                self._checkpoint_timer = Timer(self.checkpoint, interval=(30 * 60))
+                self._checkpoint_timer = Timer(self.checkpoint, interval=(30 * 60), name="Checkpoint")
 
         # if we use the functionality of dynamically adding executors
         # all executors should be managed.
@@ -215,7 +214,7 @@ class DataFlowKernel(object):
             task_log_info['task_fail_history'] = ",".join(self.tasks[task_id]['fail_history'])
         task_log_info['task_depends'] = None
         if self.tasks[task_id]['depends'] is not None:
-            task_log_info['task_depends'] = ",".join([str(t._tid) for t in self.tasks[task_id]['depends']])
+            task_log_info['task_depends'] = ",".join([str(t.tid) for t in self.tasks[task_id]['depends']])
         task_log_info['task_elapsed_time'] = None
         if self.tasks[task_id]['time_returned'] is not None:
             task_log_info['task_elapsed_time'] = (self.tasks[task_id]['time_returned'] -
@@ -312,6 +311,8 @@ class DataFlowKernel(object):
         if self.tasks[task_id]['status'] == States.pending:
             self.launch_if_ready(task_id)
 
+        self.tasks[task_id]['app_fu'].parent_callback(future)
+
         return
 
     def handle_app_update(self, task_id, future, memo_cbk=False):
@@ -390,13 +391,6 @@ class DataFlowKernel(object):
                         logger.error("add_done_callback got an exception {} which will be ignored".format(e))
 
                     self.tasks[task_id]['exec_fu'] = exec_fu
-                    try:
-                        self.tasks[task_id]['app_fu'].update_parent(exec_fu)
-                        self.tasks[task_id]['exec_fu'] = exec_fu
-                    except AttributeError as e:
-                        logger.error(
-                            "Task {}: Caught AttributeError at update_parent".format(task_id))
-                        raise e
             else:
                 logger.info(
                     "Task {} failed due to dependency failure".format(task_id))
@@ -406,19 +400,12 @@ class DataFlowKernel(object):
                     task_log_info = self._create_task_log_info(task_id, 'lazy')
                     self.monitoring.send(MessageType.TASK_INFO, task_log_info)
 
-                try:
-                    fu = Future()  # type: Future[Any]
-                    fu.retries_left = 0  # type: ignore
-                    self.tasks[task_id]['exec_fu'] = fu
-                    self.tasks[task_id]['app_fu'].update_parent(fu)
-                    fu.set_exception(DependencyError(exceptions,
-                                                     task_id,
-                                                     None))
-
-                except AttributeError as e:
-                    logger.error(
-                        "Task {} AttributeError at update_parent".format(task_id))
-                    raise e
+                fu = Future()  # type: Future[Any]
+                fu.retries_left = 0  # type: ignore
+                self.tasks[task_id]['exec_fu'] = fu
+                fu.set_exception(DependencyError(exceptions,
+                                                 task_id,
+                                                 None))
 
     def launch_task(self, task_id, executable, *args, **kwargs):
         """Handle the actual submission of the task to the executor layer.
@@ -490,17 +477,14 @@ class DataFlowKernel(object):
 
         inputs = kwargs.get('inputs', [])
         for idx, f in enumerate(inputs):
-            inputs[idx] = self.data_manager.stage_in(f, executor)
-            func = self.data_manager.replace_task(f, func, executor)
+            (inputs[idx], func) = self.data_manager.optionally_stage_in(f, func, executor)
 
         for kwarg, f in kwargs.items():
-            kwargs[kwarg] = self.data_manager.stage_in(f, executor)
-            func = self.data_manager.replace_task(f, func, executor)
+            (kwargs[kwarg], func) = self.data_manager.optionally_stage_in(f, func, executor)
 
         newargs = list(args)
         for idx, f in enumerate(newargs):
-            newargs[idx] = self.data_manager.stage_in(f, executor)
-            func = self.data_manager.replace_task(f, func, executor)
+            (newargs[idx], func) = self.data_manager.optionally_stage_in(f, func, executor)
 
         return tuple(newargs), kwargs, func
 

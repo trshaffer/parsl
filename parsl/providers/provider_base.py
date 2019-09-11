@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
+from typing import Any, List, Optional
 
 # for typechecking:
 from typing import Any, Dict, List, Optional
@@ -132,7 +133,7 @@ class ExecutionProvider(metaclass=ABCMeta):
         self._mem_per_node = value
 
     @property
-    def cores_per_node(self) -> Optional[float]:
+    def cores_per_node(self) -> Optional[int]:
         """Number of cores to provision per node.
 
         Providers which set this property should ask for cores_per_node cores
