@@ -88,7 +88,7 @@ def _http_stage_in(working_dir, parent_fut=None, outputs=[], staging_inhibit_out
     if working_dir:
         os.makedirs(working_dir, exist_ok=True)
     resp = requests.get(file.url, stream=True)
-    with open(local_path, 'wb') as f:
+    with open(file.local_path, 'wb') as f:
         for chunk in resp.iter_content(chunk_size=1024):
             if chunk:
                 f.write(chunk)
