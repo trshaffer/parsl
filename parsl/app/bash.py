@@ -12,10 +12,8 @@ from parsl.dataflow.dflow import DataFlowKernelLoader
 from parsl.dataflow.dflow import DataFlowKernel # only for mypy
 
 def remote_side_bash_executor(func, *args, **kwargs) -> int:
-    """Execute the bash app type function and return the command line string.
-
-    This string is reformatted with the *args, and **kwargs
-    from call time.
+    """Executes the supplied function with *args and **kwargs to get a
+    command-line to run, and then run that command-line using bash.
     """
     import os
     import time

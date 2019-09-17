@@ -279,7 +279,9 @@ class DataFlowKernel(object):
                     self.monitoring.send(MessageType.TASK_INFO, task_log_info)
                 return
 
-            if self.tasks[task_id]['fail_count'] <= self._config.retries:
+            if self.tasks[task_id]['status'] == States.dep_fail:
+                logger.debug("Task {} failed due to dependency failure so skipping retries".format(task_id))
+            elif self.tasks[task_id]['fail_count'] <= self._config.retries:
                 self.tasks[task_id]['status'] = States.pending
                 logger.debug("Task {} marked for retry".format(task_id))
 
@@ -319,8 +321,7 @@ class DataFlowKernel(object):
         """This function is called as a callback when an AppFuture
         is in its final state.
 
-        It will trigger post-app processing such as checkpointing
-        and stageout.
+        It will trigger post-app processing such as checkpointing.
 
         Args:
              task_id (string) : Task id
@@ -376,21 +377,13 @@ class DataFlowKernel(object):
             self.tasks[task_id]['kwargs'] = kwargs
             if not exceptions:
                 # There are no dependency errors
-                exec_fu = None
+                exec_fu = None  # type: Optional[Future[Any]]
                 # Acquire a lock, retest the state, launch
                 with self.tasks[task_id]['task_launch_lock']:
                     if self.tasks[task_id]['status'] == States.pending:
                         exec_fu = self.launch_task(
                             task_id, self.tasks[task_id]['func'], *new_args, **kwargs)
 
-                if exec_fu:
-
-                    try:
-                        exec_fu.add_done_callback(partial(self.handle_exec_update, task_id))
-                    except Exception as e:
-                        logger.error("add_done_callback got an exception {} which will be ignored".format(e))
-
-                    self.tasks[task_id]['exec_fu'] = exec_fu
             else:
                 logger.info(
                     "Task {} failed due to dependency failure".format(task_id))
@@ -400,12 +393,20 @@ class DataFlowKernel(object):
                     task_log_info = self._create_task_log_info(task_id, 'lazy')
                     self.monitoring.send(MessageType.TASK_INFO, task_log_info)
 
-                fu = Future()  # type: Future[Any]
-                fu.retries_left = 0  # type: ignore
-                self.tasks[task_id]['exec_fu'] = fu
-                fu.set_exception(DependencyError(exceptions,
-                                                 task_id,
-                                                 None))
+                exec_fu = Future()
+                exec_fu.retries_left = 0  # type: ignore
+                exec_fu.set_exception(DependencyError(exceptions,
+                                                      task_id,
+                                                      None))
+
+            if exec_fu:
+
+                try:
+                    exec_fu.add_done_callback(partial(self.handle_exec_update, task_id))
+                except Exception as e:
+                    logger.error("add_done_callback got an exception {} which will be ignored".format(e))
+
+                self.tasks[task_id]['exec_fu'] = exec_fu
 
     def launch_task(self, task_id, executable, *args, **kwargs):
         """Handle the actual submission of the task to the executor layer.
