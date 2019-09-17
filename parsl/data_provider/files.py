@@ -46,6 +46,14 @@ class File(object):
         self.filename = os.path.basename(self.path)
         self.local_path = None # type: Optional[str]
 
+    def cleancopy(self) -> "File":
+        """Returns a copy of the file containing only the global immutable state,
+           without any mutable site-local local_path information. The returned File
+           object will be as the original object was when it was constructed.
+        """
+        logger.debug("Making clean copy of File object {}".format(repr(self)))
+        return File(self.url)
+
     def __str__(self):
         return self.filepath
 
@@ -65,7 +73,10 @@ class File(object):
         """Return the resolved filepath on the side where it is called from.
 
         The appropriate filepath will be returned when called from within
-        an app running remotely as well as regular python on the client side.
+        an app running remotely as well as regular python on the submit side.
+
+        Only file: scheme URLs make sense to have a submit-side path, as other
+        URLs are not accessible through POSIX file access.
 
         What does local_path have to only override this for an enumerated list of schemes? Why can't it override filepath *always*?
 
@@ -75,12 +86,10 @@ class File(object):
         if hasattr(self, 'local_path') and self.local_path is not None:
             return self.local_path
 
-        if self.scheme in ['ftp', 'http', 'https', 'globus']:
-            return self.filename
-        elif self.scheme in ['file']:
+        if self.scheme in ['file']:
             return self.path
         else:
-            raise Exception('Cannot return filepath for unknown scheme {}'.format(self.scheme))
+            raise ValueError("No local_path set for {}".format(repr(self)))
 
 
 if __name__ == '__main__':
