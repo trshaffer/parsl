@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
 from concurrent.futures import Future
 
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Callable
 
 
 # for type checking:
@@ -56,7 +56,7 @@ class ParslExecutor(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def submit(self, func: Any, *args: Any, **kwargs: Any) -> Future:
+    def submit(self, func: Callable, *args: Any, **kwargs: Any) -> Future:
         """Submit.
 
         We haven't yet decided on what the args to this can be,
