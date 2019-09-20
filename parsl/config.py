@@ -51,6 +51,8 @@ class Config(RepresentationMixin):
         scaling will be disabled. Default is 'simple'.
     # TODO: db_logger_config is not documented here. The type is keyword based here, by the looks of it, which might
     # be better structured as a type-checked config object? For now, I've told mypy it is Optional[Any] which is weak.
+    max_idletime : float, optional
+        The maximum idle time for an executor in the 'simple' strategy. Default is 120.0 seconds.
     usage_tracking : bool, optional
         Set this field to True to opt-in to Parsl's usage tracking system. Parsl only collects minimal, non personally-identifiable,
         information used for reporting to our funding agencies. Default is False.
@@ -67,6 +69,7 @@ class Config(RepresentationMixin):
                  retries: int = 0,
                  run_dir: str = 'runinfo',
                  strategy: Optional[str] = 'simple',
+                 max_idletime: float = 120.0,
                  monitoring: Optional[MonitoringHub] = None,
                  usage_tracking: bool = False) -> None:
         if executors is None:
@@ -92,6 +95,7 @@ class Config(RepresentationMixin):
         self.retries = retries
         self.run_dir = run_dir
         self.strategy = strategy
+        self.max_idletime = max_idletime
         self.usage_tracking = usage_tracking
         self.monitoring = monitoring
 

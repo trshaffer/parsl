@@ -133,7 +133,7 @@ class Strategy(object):
         self.dfk = dfk
         self.config = dfk.config
         self.executors = {} # type: Dict[str, Dict[str, Any]]
-        self.max_idletime = 60 * 2  # 2 minutes
+        self.max_idletime = self.dfk.config.max_idletime
 
         for e in self.dfk.config.executors:
             self.executors[e.label] = {'idle_since': None, 'config': e.label}
