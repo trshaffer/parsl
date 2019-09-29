@@ -356,10 +356,6 @@ class AzureProvider(ExecutionProvider, RepresentationMixin):
         return return_vals
 
     @property
-    def scaling_enabled(self):
-        return True
-
-    @property
     def label(self):
         return self._label
 

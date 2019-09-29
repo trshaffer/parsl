@@ -44,8 +44,6 @@ class ClusterProvider(ExecutionProvider, Channeled):
           [ ids ]       ------->|  cancel
           [cancel]     <--------|----+
                                 |
-          [True/False] <--------|  scaling_enabled
-                                |
                                 +-------------------
     """
 
@@ -61,7 +59,6 @@ class ClusterProvider(ExecutionProvider, Channeled):
                  launcher: Launcher,
                  cmd_timeout: int =10) -> None:
 
-        self._scaling_enabled = True
         self._label = label
         self.channel = channel
         self.nodes_per_block = nodes_per_block
@@ -160,16 +157,6 @@ class ClusterProvider(ExecutionProvider, Channeled):
         if job_ids:
             self._status()
         return [self.resources[jid]['status'] for jid in job_ids]
-
-    @property
-    def scaling_enabled(self):
-        """ The callers of ParslExecutors need to differentiate between Executors
-        and Executors wrapped in a resource provider
-
-        Returns:
-              - Status (Bool)
-        """
-        return self._scaling_enabled
 
     @property
     def current_capacity(self):
