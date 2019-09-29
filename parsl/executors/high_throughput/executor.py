@@ -147,6 +147,8 @@ class HighThroughputExecutor(ParslExecutor, RepresentationMixin):
         In case of a remote file system, specify the path to where logs will be kept.
     """
 
+    _queue_management_thread: Optional[threading.Thread]
+
     @typeguard.typechecked
     def __init__(self,
                  label: str = 'HighThroughputExecutor',
@@ -573,7 +575,6 @@ class HighThroughputExecutor(ParslExecutor, RepresentationMixin):
         Raises:
              NotImplementedError
         """
-        r = [] # type: Union[List[Any], None]
         for i in range(blocks):
             external_block_id = str(len(self.blocks))
             launch_cmd = self.launch_cmd.format(block_id=external_block_id)
@@ -582,9 +583,7 @@ class HighThroughputExecutor(ParslExecutor, RepresentationMixin):
             if not internal_block:
                 raise(ScalingFailed(self.provider.label,
                                     "Attempts to provision nodes via provider has failed"))
-            r.extend([external_block_id])
             self.blocks[external_block_id] = internal_block
-        return r
 
     def scale_in(self, blocks: Optional[int] = None, block_ids: List[str] = []) -> None:
         """Scale in the number of active blocks by specified amount.
@@ -618,9 +617,7 @@ class HighThroughputExecutor(ParslExecutor, RepresentationMixin):
         # Now kill via provider
         to_kill = [self.blocks.pop(bid) for bid in block_ids_to_kill]
 
-        r = self.provider.cancel(to_kill)
-
-        return r
+        self.provider.cancel(to_kill)
 
     def status(self) -> List[str]:
         """Return status of all blocks."""
