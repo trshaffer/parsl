@@ -831,7 +831,7 @@ class DataFlowKernel(object):
                                 remote_run_dir = os.path.join(parent, child)
                                 c.script_dir = os.path.join(remote_run_dir, 'remote_submit_scripts')
                                 executor.provider.script_dir = os.path.join(self.run_dir, 'local_submit_scripts')
-                    c.makedirs(c.script_dir, exist_ok=True)
+                        c.makedirs(c.script_dir, exist_ok=True)
                     os.makedirs(executor.provider.script_dir, exist_ok=True)
             self.executors[executor.label] = executor
             executor.start()
