@@ -74,7 +74,7 @@ class LocalChannel(Channel, RepresentationMixin):
             retcode = proc.returncode
 
         except Exception as e:
-            logger.warn("Execution of command '{}' failed due to \n{}".format(cmd, e))
+            logger.warning("Execution of command '{}' failed due to \n{}".format(cmd, e))
             raise
 
         return (retcode, stdout.decode("utf-8"), stderr.decode("utf-8"))
@@ -110,7 +110,7 @@ class LocalChannel(Channel, RepresentationMixin):
             pid = proc.pid
 
         except Exception as e:
-            logger.warn("Execution of command '{}' failed due to \n{}".format(cmd, e))
+            logger.warning("Execution of command '{}' failed due to \n{}".format(cmd, e))
             raise
 
         return pid, proc

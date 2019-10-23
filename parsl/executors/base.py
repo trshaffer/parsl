@@ -79,6 +79,8 @@ class ParslExecutor(metaclass=ABCMeta):
                   - so is it always the case that we can add retries_left? (I guess the python model permits that but it's a bit type-ugly)
 
 
+        The value returned must be a Future, with the further requirements that
+        it must be possible to assign a retries_left member slot to that object.
         """
         pass
 

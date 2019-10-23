@@ -138,5 +138,9 @@ class ExecutionProvider(metaclass=ABCMeta):
         self._cores_per_node = value
 
 class Channeled():
-   """A marker type to indicate that parsl should manage Channels for this provider"""
+   """A marker type to indicate that parsl should manage a Channel for this provider"""
    channel: Channel
+
+class MultiChanneled():
+   """A marker type to indicate that parsl should manage Channels for this provider"""
+   channels: List[Channel]
