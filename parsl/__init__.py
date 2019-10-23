@@ -33,8 +33,6 @@ import typeguard
 
 from typing import Optional
 
-from typing import Optional
-
 from parsl.version import VERSION
 from parsl.app.app import App, bash_app, python_app
 from parsl.executors import ThreadPoolExecutor
