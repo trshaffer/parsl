@@ -1,6 +1,5 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
 
-from typing import TYPE_CHECKING
 from typing import Any, Dict, Optional, Tuple
 
 class Channel(metaclass=ABCMeta):
