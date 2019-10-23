@@ -10,9 +10,6 @@ from parsl.dataflow.dflow import DataFlowKernelLoader
 
 logger = logging.getLogger(__name__)
 
-from typing import Any, List
-from concurrent.futures import Future
-
 def timeout(f, seconds):
     def wrapper(*args, **kwargs):
         import threading
