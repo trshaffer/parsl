@@ -4,11 +4,6 @@ import os
 
 from parsl import python_app
 
-# In both _http_stage_in and _ftp_stage_in the handling of
-# file.local_path is rearranged: file.local_path is an optional
-# string, so even though we are setting it, it is still optional
-# and so cannot be used as a parameter to open.
-
 from parsl.utils import RepresentationMixin
 from parsl.data_provider.staging import Staging
 
