@@ -2,6 +2,8 @@ import logging
 
 from typing import List, Optional
 
+import typeguard
+
 from parsl.utils import RepresentationMixin
 from parsl.executors.base import ParslExecutor
 from parsl.executors.threads import ThreadPoolExecutor
@@ -67,6 +69,7 @@ class Config(RepresentationMixin):
         bigger system as a whole.
     """
 
+    @typeguard.typechecked
     def __init__(self,
                  executors: Optional[List[ParslExecutor]] = None,
                  app_cache: bool = True,
