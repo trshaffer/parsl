@@ -9,22 +9,9 @@ from parsl.data_provider.ftp import FTPSeparateTaskStaging
 from parsl.data_provider.http import HTTPSeparateTaskStaging
 from parsl.data_provider.staging import Staging
 
-if TYPE_CHECKING:
-    from parsl.dataflow.dflow import DataFlowKernel
-
-from typing import cast, List
-
 logger = logging.getLogger(__name__)
 
-from typing import TYPE_CHECKING
-from typing import Optional
-
-from concurrent.futures import Future
-
 if TYPE_CHECKING:
-    from parsl.app.futures import DataFuture
-    from parsl.data_provider.files import File # for mypy
-    from parsl.data_provider.files import File
     from parsl.dataflow.dflow import DataFlowKernel
 
 # these will be shared between all executors that do not explicitly
