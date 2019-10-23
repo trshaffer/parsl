@@ -2,7 +2,6 @@
 """
 import os
 import logging
-import typing
 from concurrent.futures import Future
 
 from parsl.dataflow.futures import _STATE_TO_DESCRIPTION_MAP, FINISHED
