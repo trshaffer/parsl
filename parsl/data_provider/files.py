@@ -44,7 +44,7 @@ class File(object):
         self.netloc = parsed_url.netloc
         self.path = parsed_url.path
         self.filename = os.path.basename(self.path)
-        self.local_path = None # type: Optional[str]
+        self.local_path = None  # type: Optional[str]
 
     def cleancopy(self) -> "File":
         """Returns a copy of the file containing only the global immutable state,
@@ -54,18 +54,18 @@ class File(object):
         logger.debug("Making clean copy of File object {}".format(repr(self)))
         return File(self.url)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.filepath
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         content = "{0} at 0x{1:x} url={2} scheme={3} netloc={4} path={5} filename={6}".format(
             self.__class__, id(self), self.url, self.scheme, self.netloc, self.path, self.filename)
-        if hasattr(self, 'local_path'):
+        if self.local_path is not None:
             content += " local_path={0}".format(self.local_path)
 
         return "<{}>".format(content)
 
-    def __fspath__(self):
+    def __fspath__(self) -> str:
         return self.filepath
 
     @property
@@ -78,12 +78,10 @@ class File(object):
         Only file: scheme URLs make sense to have a submit-side path, as other
         URLs are not accessible through POSIX file access.
 
-        What does local_path have to only override this for an enumerated list of schemes? Why can't it override filepath *always*?
-
         Returns:
              - filepath
         """
-        if hasattr(self, 'local_path') and self.local_path is not None:
+        if self.local_path is not None:
             return self.local_path
 
         if self.scheme in ['file']:

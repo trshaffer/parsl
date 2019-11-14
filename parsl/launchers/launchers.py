@@ -86,7 +86,7 @@ class GnuParallelLauncher(Launcher):
 
         x = '''export CORES=$(getconf _NPROCESSORS_ONLN)
 echo "Found cores : $CORES"
-WORKERCOUNT={3}
+WORKERCOUNT={task_blocks}
 
 # Deduplicate the nodefile
 SSHLOGINFILE="$JOBNAME.nodes"
@@ -97,7 +97,7 @@ else
 fi
 
 cat << PARALLEL_CMD_EOF > cmd_$JOBNAME.sh
-{0}
+{command}
 PARALLEL_CMD_EOF
 chmod u+x cmd_$JOBNAME.sh
 
@@ -113,10 +113,10 @@ do
 done
 
 parallel --env _ --joblog "$JOBNAME.sh.parallel.log" \
-    --sshloginfile $SSHLOGINFILE --jobs {1} < $PFILE
+    --sshloginfile $SSHLOGINFILE --jobs {tasks_per_node} < $PFILE
 
 echo "All workers done"
-'''.format(command, tasks_per_node, nodes_per_block, task_blocks)
+'''.format(command=command, tasks_per_node=tasks_per_node, task_blocks=task_blocks)
         return x
 
 
@@ -142,7 +142,7 @@ class MpiExecLauncher(Launcher):
 
         x = '''export CORES=$(getconf _NPROCESSORS_ONLN)
 echo "Found cores : $CORES"
-WORKERCOUNT={3}
+WORKERCOUNT={task_blocks}
 
 # Deduplicate the nodefile
 HOSTFILE="$JOBNAME.nodes"
@@ -153,14 +153,14 @@ else
 fi
 
 cat << MPIEXEC_EOF > cmd_$JOBNAME.sh
-{0}
+{command}
 MPIEXEC_EOF
 chmod u+x cmd_$JOBNAME.sh
 
 mpiexec --bind-to none -n $WORKERCOUNT --hostfile $HOSTFILE /usr/bin/sh cmd_$JOBNAME.sh
 
 echo "All workers done"
-'''.format(command, tasks_per_node, nodes_per_block, task_blocks)
+'''.format(command=command, task_blocks=task_blocks)
         return x
 
 
@@ -189,17 +189,17 @@ class MpiRunLauncher(Launcher):
 
         x = '''export CORES=$(getconf _NPROCESSORS_ONLN)
 echo "Found cores : $CORES"
-WORKERCOUNT={3}
+WORKERCOUNT={task_blocks}
 
 cat << MPIRUN_EOF > cmd_$JOBNAME.sh
-{0}
+{command}
 MPIRUN_EOF
 chmod u+x cmd_$JOBNAME.sh
 
-mpirun -np $WORKERCOUNT {4} cmd_$JOBNAME.sh
+mpirun -np $WORKERCOUNT {bash_location} cmd_$JOBNAME.sh
 
 echo "All workers done"
-'''.format(command, tasks_per_node, nodes_per_block, task_blocks, self.bash_location)
+'''.format(command=command, task_blocks=task_blocks, bash_location=self.bash_location)
         return x
 
 

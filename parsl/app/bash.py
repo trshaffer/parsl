@@ -2,7 +2,7 @@ from functools import update_wrapper
 from inspect import signature, Parameter
 
 # for typing
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 from concurrent.futures import Future
 
 from parsl.app.errors import wrap_error
@@ -100,7 +100,7 @@ def remote_side_bash_executor(func, *args, **kwargs) -> int:
         raise pe.AppTimeout("[{}] App exceeded walltime: {}".format(func_name, timeout))
 
     except Exception as e:
-        raise pe.AppException("[{}] App caught exception: {}".format(func_name, proc.returncode), e)
+        raise pe.AppException("[{}] App caught exception with returncode: {}".format(func_name, returncode), e)
 
     if returncode != 0:
         raise pe.AppFailure("[{}] App failed with exit code: {}".format(func_name, proc.returncode), proc.returncode)
@@ -150,8 +150,9 @@ class BashApp(AppBase):
                    App_fut
 
         """
-        # Update kwargs in the app definition with ones passed in at calltime
-        self.kwargs.update(kwargs)
+        invocation_kwargs = {}  # type: Dict[str, Any]
+        invocation_kwargs.update(self.kwargs)
+        invocation_kwargs.update(kwargs)
 
         if self.data_flow_kernel is None:
             dfk = DataFlowKernelLoader.dfk()
@@ -163,6 +164,6 @@ class BashApp(AppBase):
                              executors=self.executors,
                              fn_hash=self.func_hash,
                              cache=self.cache,
-                             **self.kwargs)
+                             **invocation_kwargs)
 
         return app_fut
