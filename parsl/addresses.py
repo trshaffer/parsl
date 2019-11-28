@@ -17,6 +17,8 @@ import fcntl
 import struct
 import psutil
 
+from typing import Set
+
 logger = logging.getLogger(__name__)
 
 
