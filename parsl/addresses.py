@@ -6,8 +6,6 @@ The helper to use depends on the network environment around the submitter,
 so some experimentation will probably be needed to choose the correct one.
 """
 
-from typing import Set
-
 import logging
 import os
 import platform
