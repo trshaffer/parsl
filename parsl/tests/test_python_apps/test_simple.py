@@ -4,6 +4,9 @@ import parsl
 from parsl.app.app import App
 from parsl.tests.configs.local_ipp import config
 
+from concurrent.futures import Future
+
+from typing import Dict, Union
 
 @App('python')
 def increment(x):
@@ -18,20 +21,23 @@ def slow_increment(x, dur):
 
 
 def test_increment(depth=5):
-    futs = {0: 0}
+    futs = {0: 0} # type: Dict[int, Union[int, Future]]
     for i in range(1, depth):
         futs[i] = increment(futs[i - 1])
 
-    x = sum([futs[i].result() for i in futs if not isinstance(futs[i], int)])
+    # this is a slightly awkward rearrangement: we need to bind f so that mypy
+    # can take the type property proved by isinstance and carry it over to
+    # reason about if f.result() valid.
+    x = sum([f.result() for i in futs for f in [futs[i]] if isinstance(f, Future)])
     assert x == sum(range(1, depth)), "[TEST] increment [FAILED]"
 
 
 def test_slow_increment(depth=5):
-    futs = {0: 0}
+    futs = {0: 0} # type: Dict[int, Union[int, Future]]
     for i in range(1, depth):
         futs[i] = slow_increment(futs[i - 1], 0.01)
 
-    x = sum([futs[i].result() for i in futs if not isinstance(futs[i], int)])
+    x = sum([f.result() for i in futs for f in [futs[i]] if isinstance(f, Future)])
 
     assert x == sum(range(1, depth)), "[TEST] slow_increment [FAILED]"
 
