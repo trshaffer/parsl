@@ -30,6 +30,8 @@ else:
 from ipyparallel.serialize import unpack_apply_message  # pack_apply_message,
 from ipyparallel.serialize import serialize_object
 
+logger = logging.getLogger("parsl")
+
 RESULT_TAG = 10
 TASK_REQUEST_TAG = 11
 
@@ -536,8 +538,6 @@ def start_file_logger(filename, rank, name='parsl', level=logging.DEBUG, format_
     if format_string is None:
         format_string = "%(asctime)s.%(msecs)03d %(name)s:%(lineno)d Rank:{0} [%(levelname)s]  %(message)s".format(rank)
 
-    global logger
-    logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
     handler = logging.FileHandler(filename)
     handler.setLevel(level)
