@@ -8,6 +8,8 @@ from parsl.app.app import bash_app
 import parsl.app.errors as pe
 
 
+from parsl.app.errors import AppFailure
+
 from parsl.tests.configs.local_threads import config
 
 
@@ -92,7 +94,7 @@ def test_div_0(test_fn=div_0):
     f = test_fn()
     try:
         f.result()
-    except Exception as e:
+    except AppFailure as e:
         print("Caught exception", e)
         assert e.exitcode == err_code, "{0} expected err_code:{1} but got {2}".format(test_fn.__name__,
                                                                                       err_code,
@@ -141,7 +143,7 @@ def test_invalid_exit(test_fn=invalid_exit):
     f = test_fn()
     try:
         f.result()
-    except Exception as e:
+    except AppFailure as e:
         print("Caught exception", e)
         assert e.exitcode == err_code, "{0} expected err_code:{1} but got {2}".format(test_fn.__name__,
                                                                                       err_code,
@@ -158,7 +160,7 @@ def test_not_executable(test_fn=not_executable):
     f = test_fn()
     try:
         f.result()
-    except Exception as e:
+    except AppFailure as e:
         print("Caught exception", e)
         assert e.exitcode == err_code, "{0} expected err_code:{1} but got {2}".format(test_fn.__name__,
                                                                                       err_code,
@@ -173,7 +175,7 @@ def run_app(test_fn, err_code):
     print(f)
     try:
         f.result()
-    except Exception as e:
+    except AppFailure as e:
         print("Caught exception", e)
         assert e.exitcode == err_code, "{0} expected err_code:{1} but got {2}".format(test_fn.__name__,
                                                                                       err_code,
