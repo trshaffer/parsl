@@ -9,10 +9,10 @@ from parsl.data_provider.ftp import FTPSeparateTaskStaging
 from parsl.data_provider.http import HTTPSeparateTaskStaging
 from parsl.data_provider.staging import Staging
 
-logger = logging.getLogger(__name__)
-
 if TYPE_CHECKING:
     from parsl.dataflow.dflow import DataFlowKernel
+
+logger = logging.getLogger(__name__)
 
 # these will be shared between all executors that do not explicitly
 # override, so should not contain executor-specific state
