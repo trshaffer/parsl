@@ -16,8 +16,7 @@ from parsl.version import VERSION
 logger = logging.getLogger(__name__)
 
 
-def get_version():
-    # type: () -> str
+def get_version() -> str:
     version = parsl.__version__
     work_tree = os.path.dirname(os.path.dirname(__file__))
     git_dir = os.path.join(work_tree, '.git')
@@ -35,8 +34,7 @@ def get_version():
     return version
 
 
-def get_all_checkpoints(rundir="runinfo"):
-    # type: (str) -> List[str]
+def get_all_checkpoints(rundir: str ="runinfo") -> List[str]:
     """Finds the checkpoints from all last runs.
 
     Note that checkpoints are incremental, and this helper will not find
@@ -69,8 +67,7 @@ def get_all_checkpoints(rundir="runinfo"):
     return checkpoints
 
 
-def get_last_checkpoint(rundir="runinfo"):
-    # type: (str) -> List[str]
+def get_last_checkpoint(rundir: str ="runinfo") -> List[str]:
     """Finds the checkpoint from the last run, if one exists.
 
     Note that checkpoints are incremental, and this helper will not find
