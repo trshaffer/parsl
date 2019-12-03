@@ -283,7 +283,7 @@ class MonitoringHub(RepresentationMixin):
         Wrap the Parsl app with a function that will call the monitor function and point it at the correct pid when the task begins.
         """
         def wrapped(*args, **kwargs):
-            command_q = Queue(maxsize=10)
+            command_q = Queue(maxsize=10) # type: Queue[Any]
             p = Process(target=monitor,
                         args=(os.getpid(),
                               task_id,
@@ -541,7 +541,7 @@ def monitor(pid,
             if msg == "Finished":
                 logging.info("Received task finished message. Ending the monitoring loop now.")
                 break
-        except Queue.empty:
+        except queue.Empty:
             logging.debug("Have not received any message.")
 
         logging.debug("sleeping")
