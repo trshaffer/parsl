@@ -18,10 +18,15 @@ import json
 import psutil
 import multiprocessing
 
+from typing import Any, Dict, Type
+
 from parsl.version import VERSION as PARSL_VERSION
 from parsl.app.errors import RemoteExceptionWrapper
 from parsl.executors.high_throughput.errors import WorkerLost
 from parsl.executors.high_throughput.probe import probe_addresses
+
+mpQueue : Type
+
 if platform.system() == 'Darwin':
     from parsl.executors.high_throughput.mac_safe_queue import MacSafeQueue as mpQueue
 else:
@@ -368,16 +373,16 @@ class Manager(object):
 
         logger.critical("[WORKER_WATCHDOG_THREAD] Exiting")
 
-    def start(self):
+    def start(self) -> None:
         """ Start the worker processes.
 
         TODO: Move task receiving to a thread
         """
         start = time.time()
         self._kill_event = threading.Event()
-        self._tasks_in_progress = multiprocessing.Manager().dict()
+        self._tasks_in_progress = multiprocessing.Manager().dict()  # type: Dict[Any, Any]
 
-        self.procs = {}
+        self.procs = {}  # type: Dict[Any, Any]
         for worker_id in range(self.worker_count):
             p = multiprocessing.Process(target=worker, args=(worker_id,
                                                              self.uid,
@@ -468,7 +473,7 @@ def execute_task(bufs):
         return user_ns.get(resultname)
 
 
-def worker(worker_id, pool_id, pool_size, task_queue, result_queue, worker_queue, tasks_in_progress):
+def worker(worker_id, pool_id, pool_size, task_queue, result_queue, worker_queue, tasks_in_progress) -> None:
     """
 
     Put request token into queue
