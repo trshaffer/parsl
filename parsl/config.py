@@ -1,8 +1,7 @@
 import logging
+import typeguard
 
 from typing import List, Optional
-
-import typeguard
 
 from parsl.utils import RepresentationMixin
 from parsl.executors.base import ParslExecutor
