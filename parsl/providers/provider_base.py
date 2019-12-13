@@ -7,15 +7,15 @@ from typing import Any, Dict, List, Optional
 from parsl.channels.base import Channel
 
 
-class JobState(bytes, Enum):
+class JobState(Enum):
     """Defines a set of states that a job can be in"""
 
-    def __new__(cls, value, terminal):
-        # noinspection PyArgumentList
-        obj = bytes.__new__(cls, [value])
-        obj._value_ = value
-        obj.terminal = terminal
-        return obj
+#    def __new__(cls, value, terminal):
+#        # noinspection PyArgumentList
+#        obj = bytes.__new__(cls, [value])
+#        obj._value_ = value
+#        obj.terminal = terminal
+#        return obj
 
     UNKNOWN = (0, False)
     PENDING = (1, False)
@@ -26,19 +26,24 @@ class JobState(bytes, Enum):
     TIMEOUT = (6, True)
     HELD = (7, False)
 
+    @property
+    def terminal(self) -> bool:
+        (_, state) = self.value
+        return state
+
 
 class JobStatus(object):
     """Encapsulates a job state together with other details, presently a (error) message"""
 
-    def __init__(self, state: JobState, message: str = None):
+    def __init__(self, state: JobState, message: Optional[str] = None):
         self.state = state
         self.message = message
 
     @property
-    def terminal(self):
+    def terminal(self) -> bool:
         return self.state.terminal
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         if self.message is not None:
             return "{} ({})".format(self.state, self.message)
         else:

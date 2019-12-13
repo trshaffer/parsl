@@ -155,14 +155,13 @@ class KubernetesProvider(ExecutionProvider, RepresentationMixin):
 
         return pod_name
 
-    def status(self, job_ids) -> List[str]:
+    def status(self, job_ids) -> List[JobStatus]:
         """ Get the status of a list of jobs identified by the job identifiers
         returned from the submit request.
         Args:
              - job_ids (list) : A list of job identifiers
         Returns:
-             - A list of status from ['PENDING', 'RUNNING', 'CANCELLED', 'COMPLETED',
-               'FAILED', 'TIMEOUT'] corresponding to each job_id in the job_ids list.
+             - A list of JobStatuses corresponding to each job_id in the job_ids list.
         Raises:
              - ExecutionProviderExceptions or its subclasses
         """
