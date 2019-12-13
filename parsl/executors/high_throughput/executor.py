@@ -514,7 +514,7 @@ class HighThroughputExecutor(ParslExecutor, RepresentationMixin):
                 logger.debug("[HOLD_BLOCK]: Sending hold to manager: {}".format(manager['manager']))
                 self.hold_worker(manager['manager'])
 
-    def submit(self, func, *args, **kwargs) -> Future[Any]:
+    def submit(self, func, *args, **kwargs) -> "Future[Any]":
         """Submits work to the the outgoing_q.
 
         The outgoing_q is an external process listens on this

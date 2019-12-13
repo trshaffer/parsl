@@ -7,15 +7,10 @@ from typing import Any, Dict, List, Optional
 from parsl.channels.base import Channel
 
 
+# mypy can't typecheck the master version of JobState
+# I hope that this behaves the same
 class JobState(Enum):
     """Defines a set of states that a job can be in"""
-
-#    def __new__(cls, value, terminal):
-#        # noinspection PyArgumentList
-#        obj = bytes.__new__(cls, [value])
-#        obj._value_ = value
-#        obj.terminal = terminal
-#        return obj
 
     UNKNOWN = (0, False)
     PENDING = (1, False)
@@ -35,6 +30,11 @@ class JobState(Enum):
 class JobStatus(object):
     """Encapsulates a job state together with other details, presently a (error) message"""
 
+    # mypy as I have configured it requires an explicit optional here.
+    # there was a change in PEP484 that makes this behaviour itself different between
+    # different typecheckers: https://github.com/python/peps/pull/689
+    # previously = None implied Optional on the type, but there has been some pressure
+    # against that - see https://github.com/python/typing/issues/275
     def __init__(self, state: JobState, message: Optional[str] = None):
         self.state = state
         self.message = message
