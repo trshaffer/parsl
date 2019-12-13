@@ -8,7 +8,13 @@ from parsl.channels.base import Channel
 
 
 # mypy can't typecheck the master version of JobState
-# I hope that this behaves the same
+# I hope that this behaves the same.
+# The __repr__ is different at least - with master
+# version: >>> JobState.RUNNING
+# <JobState.RUNNING: 2>
+# with this version:
+# <JobState.RUNNING: (2, False)>
+
 class JobState(Enum):
     """Defines a set of states that a job can be in"""
 
