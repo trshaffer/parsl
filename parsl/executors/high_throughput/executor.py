@@ -16,7 +16,7 @@ from parsl.executors.high_throughput import zmq_pipes
 from parsl.executors.high_throughput import interchange
 from parsl.executors.errors import BadMessage, ScalingFailed, DeserializationError
 from parsl.executors.base import ParslExecutor
-from parsl.providers.provider_base import ExecutionProvider
+from parsl.providers.provider_base import ExecutionProvider, JobStatus
 from parsl.data_provider.staging import Staging
 from parsl.addresses import get_all_addresses
 
@@ -615,7 +615,7 @@ class HighThroughputExecutor(ParslExecutor, RepresentationMixin):
 
         self.provider.cancel(to_kill)
 
-    def status(self) -> List[str]:
+    def status(self) -> List[JobStatus]:
         """Return status of all blocks."""
 
         status = self.provider.status(list(self.blocks.values()))

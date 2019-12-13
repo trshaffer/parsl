@@ -4,7 +4,7 @@ import time
 
 from parsl.channels import LocalChannel
 from parsl.launchers import SimpleLauncher
-from parsl.providers.provider_base import ExecutionProvider, MultiChanneled
+from parsl.providers.provider_base import ExecutionProvider, JobStatus, JobState, MultiChanneled
 from parsl.providers.error import ScriptPathError
 from parsl.utils import RepresentationMixin
 
@@ -113,7 +113,7 @@ class AdHocProvider(ExecutionProvider, MultiChanneled, RepresentationMixin):
             channel_counts = {channel: 0 for channel in self.channels}
             for job_id in self.resources:
                 channel = self.resources[job_id]['channel']
-                if self.resources[job_id]['status'] == 'RUNNING':
+                if self.resources[job_id]['status'] == JobStatus(JobState.RUNNING):
                     channel_counts[channel] = channel_counts.get(channel, 0) + 1
                 else:
                     channel_counts[channel] = channel_counts.get(channel, 0)
@@ -194,8 +194,8 @@ class AdHocProvider(ExecutionProvider, MultiChanneled, RepresentationMixin):
                 logger.debug("Channel execute failed for: {}, {}".format(channel, e))
                 raise
 
-        d =                      {'job_id': job_id,
-                                  'status': 'RUNNING',
+        d                      = {'job_id': job_id,
+                                  'status': JobStatus(JobState.RUNNING),
                                   'cmd': final_cmd,
                                   'channel': channel,
                                   'remote_pid': remote_pid,
@@ -222,8 +222,8 @@ class AdHocProvider(ExecutionProvider, MultiChanneled, RepresentationMixin):
             status_command = "ps --pid {} | grep {}".format(self.resources[job_id]['job_id'],
                                                             self.resources[job_id]['cmd'].split()[0])
             retcode, stdout, stderr = channel.execute_wait(status_command)
-            if retcode != 0 and self.resources[job_id]['status'] == 'RUNNING':
-                self.resources[job_id]['status'] = 'FAILED'
+            if retcode != 0 and self.resources[job_id]['status'].state == JobState.RUNNING:
+                self.resources[job_id]['status'] = JobStatus(JobState.FAILED)
 
         return [self.resources[job_id]['status'] for job_id in job_ids]
 
@@ -249,7 +249,7 @@ class AdHocProvider(ExecutionProvider, MultiChanneled, RepresentationMixin):
                 rets.append(True)
             else:
                 rets.append(False)
-            self.resources[job_id]['status'] = 'COMPLETED'
+            self.resources[job_id]['status'] = JobStatus(JobState.COMPLETED)
         return rets
 
     @property

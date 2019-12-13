@@ -457,7 +457,7 @@ def monitor(pid,
 
     import logging
     import time
-    from multiprocessing import Queue
+    import queue
 
     format_string = "%(asctime)s.%(msecs)03d %(name)s:%(lineno)d [%(levelname)s]  %(message)s"
     logging.basicConfig(filename='{logbase}/monitor.{task_id}.{pid}.log'.format(

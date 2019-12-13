@@ -2,10 +2,11 @@ import logging
 import os
 import pathlib
 import uuid
+from typing import List
 
 from ipyparallel import Client
 from parsl.providers import LocalProvider
-from parsl.providers.provider_base import ExecutionProvider  # for mypy
+from parsl.providers.provider_base import JobStatus, ExecutionProvider
 from parsl.utils import RepresentationMixin
 
 from parsl.executors.base import ParslExecutor
@@ -271,7 +272,7 @@ sleep infinity
         else:
             logger.error("No execution provider available")
 
-    def status(self):
+    def status(self) -> List[JobStatus]:
         """Returns the status of the executor via probing the execution providers."""
         if self.provider:
             status = self.provider.status(self.engines)
