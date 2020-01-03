@@ -19,7 +19,7 @@ from concurrent.futures import Future
 from functools import partial
 
 # only for type checking:
-from typing import Any, Callable, Dict, Optional, Union, List, Tuple, cast
+from typing import Any, Callable, Dict, Iterable, Optional, Union, List, Tuple, cast
 from parsl.channels.base import Channel
 from parsl.providers.provider_base import Channeled, MultiChanneled
 
@@ -999,7 +999,7 @@ class DataFlowKernel(object):
 
         logger.info("DFK cleanup complete")
 
-    def checkpoint(self, tasks=None) -> str:
+    def checkpoint(self, tasks: Optional[List[int]]=None) -> str:
         """Checkpoint the dfk incrementally to a checkpoint file.
 
         When called, every task that has been completed yet not
@@ -1007,7 +1007,7 @@ class DataFlowKernel(object):
 
         Kwargs:
             - tasks (List of task ids) : List of task ids to checkpoint. Default=None
-                                         if set to None, we iterate over all tasks held by the DFK.
+                                         if set to None or [], we iterate over all tasks held by the DFK.
 
         .. note::
             Checkpointing only works if memoization is enabled
@@ -1018,9 +1018,9 @@ class DataFlowKernel(object):
             run under RUNDIR/checkpoints/{tasks.pkl, dfk.pkl}
         """
         with self.checkpoint_lock:
-            checkpoint_queue = None
+            # checkpoint_queue = None   # this line is unused - we always assign a new value in the following if statement # TODO push this removal to master
             if tasks:
-                checkpoint_queue = tasks
+                checkpoint_queue = tasks  # type: Iterable[int]
             else:
                 checkpoint_queue = self.tasks
 
