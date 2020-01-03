@@ -6,7 +6,7 @@ from typing import List
 
 from ipyparallel import Client
 from parsl.providers import LocalProvider
-from parsl.providers.provider_base import JobState, JobStatus, ExecutionProvider
+from parsl.providers.provider_base import JobStatus, JobState, ExecutionProvider
 from parsl.utils import RepresentationMixin
 
 from parsl.executors.base import ParslExecutor

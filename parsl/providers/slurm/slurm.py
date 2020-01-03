@@ -44,7 +44,7 @@ class SlurmProvider(ClusterProvider, RepresentationMixin):
     Parameters
     ----------
     partition : str
-        Slurm partition to request blocks from.
+        Slurm partition to request blocks from. If none, no partition slurm directive will be specified.
     channel : Channel
         Channel for accessing this provider. Possible channels include
         :class:`~parsl.channels.LocalChannel` (the default),
@@ -84,7 +84,7 @@ class SlurmProvider(ClusterProvider, RepresentationMixin):
 
     @typeguard.typechecked
     def __init__(self,
-                 partition: str,
+                 partition: Optional[str],
                  channel: Channel = LocalChannel(),
                  nodes_per_block: int = 1,
                  cores_per_node: Optional[int] = None,
@@ -120,6 +120,8 @@ class SlurmProvider(ClusterProvider, RepresentationMixin):
         self.scheduler_options = scheduler_options + '\n'
         if exclusive:
             self.scheduler_options += "#SBATCH --exclusive\n"
+        if partition:
+            self.scheduler_options += "#SBATCH --partition={}\n".format(partition)
         self.worker_init = worker_init + '\n'
 
     def _status(self):
@@ -199,7 +201,6 @@ class SlurmProvider(ClusterProvider, RepresentationMixin):
         job_config["walltime"] = wtime_to_minutes(self.walltime)
         job_config["scheduler_options"] = scheduler_options
         job_config["worker_init"] = worker_init
-        job_config["partition"] = self.partition
         job_config["user_script"] = command
 
         # Wrap the command

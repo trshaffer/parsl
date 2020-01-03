@@ -147,8 +147,7 @@ class ClusterProvider(ExecutionProvider, Channeled):
              - job_ids (list) : A list of job identifiers
 
         Returns:
-             - A list of status from ['PENDING', 'RUNNING', 'CANCELLED', 'COMPLETED',
-               'FAILED', 'TIMEOUT'] corresponding to each job_id in the job_ids list.
+             - A list of JobStatus objects corresponding to each job_id in the job_ids list.
 
         Raises:
              - ExecutionProviderException or its subclasses
