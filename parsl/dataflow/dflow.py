@@ -66,10 +66,10 @@ class TaskRecord(TypedDict, total=False):
     task_launch_lock : threading.Lock
 
     # these three could be more strongly typed perhaps but I'm not thinking about that now
-    func : Any
+    func : Callable
     fn_hash : Any
-    args : Any
-    kwargs : Any
+    args : Tuple[Any, ...]
+    kwargs : Dict[str, Any]
     env : Any
 
     time_submitted : Optional[datetime.datetime]
