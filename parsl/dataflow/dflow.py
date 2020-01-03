@@ -55,13 +55,13 @@ class TaskRecord(TypedDict, total=False):
 
     app_fu : AppFuture
     exec_fu : Optional[Future]
-    callback : Any  # I think this might be unused? a quick git grep didn't find usage for 'callback' TODO can i remove it?
+    callback : Any  # I think this might be unused? PR#1514 removes this field.
 
     executor : str
 
     fail_count : int
     fail_history : List[Any]
-    checkpoint : Optional[bool] # TODO: this should become a non-optional bool - if we haven't checkpointed it, initialise to False not None
+    checkpoint : bool
 
     task_launch_lock : threading.Lock
 
@@ -752,7 +752,7 @@ class DataFlowKernel(object):
                     'memoize': cache,
                     'callback': None,
                     'exec_fu': None,
-                    'checkpoint': None,
+                    'checkpoint': False,
                     'fail_count': 0,
                     'fail_history': [],
                     'env': None,
