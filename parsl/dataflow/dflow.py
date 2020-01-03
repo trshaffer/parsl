@@ -73,7 +73,7 @@ class TaskRecord(TypedDict, total=False):
     args : Tuple[Any, ...]
     kwargs : Dict[str, Any]
 
-    env : None  # this appears to be unused. TODO remove?
+    # env : None  # removed by PR#1517
 
     time_submitted : Optional[datetime.datetime]
     time_returned : Optional[datetime.datetime]
@@ -761,7 +761,6 @@ class DataFlowKernel(object):
                     'checkpoint': False,
                     'fail_count': 0,
                     'fail_history': [],
-                    'env': None,
                     'status': States.unsched,
                     'id': task_id,
                     'time_submitted': None,
