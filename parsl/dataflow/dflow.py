@@ -194,15 +194,33 @@ class DataFlowKernel(object):
 
         atexit.register(self.atexit_cleanup)
 
-    def _create_task_log_info(self, task_id, fail_mode=None):
+    def _create_task_log_info(self, task_id: int, fail_mode: Optional[bool] =None) -> Dict[str, Any]:
         """
         Create the dictionary that will be included in the log.
+
+        TODO: what do the three modes for fail_mode mean?
+
         """
 
-        info_to_monitor = ['func_name', 'fn_hash', 'memoize', 'checkpoint', 'fail_count',
-                           'status', 'id', 'time_submitted', 'time_returned', 'executor']
+        # because self.tasks[task_id] is now a TaskRecord not a Dict[str,...], type checking
+        # can't do enough type checking if just iterating over this list of keys to copy
+        # and the assignments need to be written out explicitly.
+        # info_to_monitor = ['func_name', 'fn_hash', 'memoize', 'checkpoint', 'fail_count',
+        #                   'status', 'id', 'time_submitted', 'time_returned', 'executor']
 
-        task_log_info = {"task_" + k: self.tasks[task_id][k] for k in info_to_monitor}
+        task_log_info = {} # type: Dict[str, Any]
+
+        task_log_info["task_func_name"] = self.tasks[task_id]['func_name']
+        task_log_info["task_fn_hash"] = self.tasks[task_id]['fn_hash']
+        task_log_info["task_memoize"] = self.tasks[task_id]['memoize']
+        task_log_info["task_checkpoint"] = self.tasks[task_id]['checkpoint']
+        task_log_info["task_fail_count"] = self.tasks[task_id]['fail_count']
+        task_log_info["task_status"] = self.tasks[task_id]['status']
+        task_log_info["task_id"] = self.tasks[task_id]['id']
+        task_log_info["task_time_submitted"] = self.tasks[task_id]['time_submitted']
+        task_log_info["task_time_returned"] = self.tasks[task_id]['time_returned']
+        task_log_info["task_executor"] = self.tasks[task_id]['executor']
+
         task_log_info['run_id'] = self.run_id
         task_log_info['timestamp'] = datetime.datetime.now()
         task_log_info['task_status_name'] = self.tasks[task_id]['status'].name
@@ -231,12 +249,18 @@ class DataFlowKernel(object):
         if self.tasks[task_id]['fail_history'] is not None:
             task_log_info['task_fail_history'] = ",".join(self.tasks[task_id]['fail_history'])
         task_log_info['task_depends'] = None
-        if self.tasks[task_id]['depends'] is not None:
-            task_log_info['task_depends'] = ",".join([str(t.tid) for t in self.tasks[task_id]['depends']])
+
+        # this needs to be its own variable so that mypy can match up the Noneness of the value determined by the if statement with how it is used as an iterator: it can't do that for computed values.
+        deps = self.tasks[task_id]['depends']
+        if deps is not None:
+            task_log_info['task_depends'] = ",".join([str(t.tid) for t in deps])
         task_log_info['task_elapsed_time'] = None
-        if self.tasks[task_id]['time_returned'] is not None:
-            task_log_info['task_elapsed_time'] = (self.tasks[task_id]['time_returned'] -
-                                                  self.tasks[task_id]['time_submitted']).total_seconds()
+
+        # explicit variables for None reasoning
+        time_returned = self.tasks[task_id]['time_returned']
+        time_submitted = self.tasks[task_id]['time_submitted']
+        if time_returned is not None and time_submitted is not None:
+            task_log_info['task_elapsed_time'] = (time_returned - time_submitted).total_seconds()
         if fail_mode is not None:
             task_log_info['task_fail_mode'] = fail_mode
         return task_log_info
