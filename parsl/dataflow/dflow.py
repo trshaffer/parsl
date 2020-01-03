@@ -12,6 +12,7 @@ import sys
 import datetime
 from getpass import getuser
 from typing import Optional
+from typing_extensions import TypedDict
 from uuid import uuid4
 from socket import gethostname
 from concurrent.futures import Future
@@ -45,7 +46,37 @@ logger = logging.getLogger(__name__)
 
 # this is the (very loose) type for the type of a parsl dfk task record
 # I want to flesh it out using PEP 589 TypedDicts
-TaskRecord = Dict[str, Any]
+# TaskRecord = Dict[str, Any]
+
+class TaskRecord(TypedDict, total=False):
+    func_name : str
+    status : States
+    depends : Optional[List[Any]] # see note on _gather_all_deps for why this is Any at the moment not something more usefully tighter
+
+    app_fu : AppFuture
+    exec_fu : Optional[Future]
+    callback : Any  # I think this might be unused? a quick git grep didn't find usage for 'callback' TODO can i remove it?
+
+    executor : str
+
+    fail_count : int
+    fail_history : List[Any]
+    checkpoint : Optional[bool] # TODO: this should become a non-optional bool - if we haven't checkpointed it, initialise to False not None
+
+    task_launch_lock : threading.Lock
+
+    # these three could be more strongly typed perhaps but I'm not thinking about that now
+    func : Any
+    fn_hash : Any
+    args : Any
+    kwargs : Any
+    env : Any
+
+    time_submitted : Optional[datetime.datetime]
+    time_returned : Optional[datetime.datetime]
+
+    memoize : bool
+    id : int
 
 class DataFlowKernel(object):
     """The DataFlowKernel adds dependency awareness to an existing executor.
@@ -562,7 +593,7 @@ class DataFlowKernel(object):
                 app_fut._outputs.append(DataFuture(app_fut, f, tid=app_fut.tid))
         return func
 
-    def _gather_all_deps(self, args, kwargs):
+    def _gather_all_deps(self, args, kwargs) -> List[Any]: # this should be a list of Futures-with-a-tid-annotation-on-them which would need a protocol class change. see sanitize_and_wrap for a place where expecting any future to have a tid too.
         """Count the number of unresolved futures on which a task depends.
 
         Args:
@@ -728,7 +759,7 @@ class DataFlowKernel(object):
                     'status': States.unsched,
                     'id': task_id,
                     'time_submitted': None,
-                    'time_returned': None}  # type: Dict[str, Any]
+                    'time_returned': None}  # type: TaskRecord
 
         app_fu = AppFuture(task_def)
 
