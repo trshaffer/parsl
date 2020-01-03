@@ -899,7 +899,7 @@ class DataFlowKernel(object):
                     elif isinstance(executor.provider, Channeled):
                         self._create_remote_dirs_over_channel(executor.provider, executor.provider.channel)
                     else:
-                        raise ValueError("Assuming executor has channels based on it having provider/script_dir, but actually it doesn't have a .channel or .channels attribute")
+                        raise ValueError("Assuming executor.provider has channel(s) based on it having provider/script_dir, but actually it isn't a (Multi)Channeled instance. provider = {}".format(executor.provider))
 
             self.executors[executor.label] = executor
             executor.start()

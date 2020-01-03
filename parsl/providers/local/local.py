@@ -6,7 +6,7 @@ import time
 from parsl.channels.base import Channel
 from parsl.channels import LocalChannel
 from parsl.launchers import SingleNodeLauncher
-from parsl.providers.provider_base import ExecutionProvider, JobState, JobStatus
+from parsl.providers.provider_base import Channeled, ExecutionProvider, JobState, JobStatus
 from parsl.providers.error import SchedulerMissingArgs, ScriptPathError
 from parsl.utils import RepresentationMixin
 
@@ -15,7 +15,7 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 
-class LocalProvider(ExecutionProvider, RepresentationMixin):
+class LocalProvider(ExecutionProvider, RepresentationMixin, Channeled):
 
     """ Local Execution Provider
 
