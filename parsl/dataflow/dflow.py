@@ -19,7 +19,7 @@ from concurrent.futures import Future
 from functools import partial
 
 # only for type checking:
-from typing import Any, Dict, Optional, Union, List, Tuple, cast
+from typing import Any, Callable, Dict, Optional, Union, List, Tuple, cast
 from parsl.channels.base import Channel
 from parsl.providers.provider_base import Channeled, MultiChanneled
 
@@ -530,7 +530,7 @@ class DataFlowKernel(object):
         logger.info("Task {} launched on executor {}".format(task_id, executor.label))
         return exec_fu
 
-    def _add_input_deps(self, executor, args, kwargs, func) -> Tuple[Tuple[Any, ...], Any, Any]:
+    def _add_input_deps(self, executor: str, args: Tuple[Any, ...], kwargs: Dict[str, Any], func: Callable) -> Tuple[Tuple[Any, ...], Dict[str, Any], Callable]:
         """Look for inputs of the app that are files. Give the data manager
         the opportunity to replace a file with a data future for that file,
         for example wrapping the result of a staging action.
@@ -539,6 +539,9 @@ class DataFlowKernel(object):
             - executor (str) : executor where the app is going to be launched
             - args (List) : Positional args to app function
             - kwargs (Dict) : Kwargs to app function
+            - func : the function that will be invoked
+
+        Returns:   args, kwargs, (replacement, wrapping) function
         """
 
         # Return if the task is _*_stage_in
