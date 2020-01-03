@@ -233,7 +233,7 @@ class Strategy(object):
                 detyped_executor = cast(Any, executor)
 
                 logger.debug('Executor {} has {} active tasks, {}/{} running/pending blocks, and {} connected workers'.format(
-                    label, active_tasks, running, pending, detyped_executor.executor.connected_workers))
+                    label, active_tasks, running, pending, detyped_executor.connected_workers))
             else:
                 logger.debug('Executor {} has {} active tasks and {}/{} running/pending blocks'.format(
                     label, active_tasks, running, pending))
