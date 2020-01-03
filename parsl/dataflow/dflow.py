@@ -284,7 +284,7 @@ class DataFlowKernel(object):
         """
         return self._config
 
-    def handle_exec_update(self, task_id, future) -> None:
+    def handle_exec_update(self, task_id: int, future: Future) -> None:
         """This function is called only as a callback from an execution
         attempt reaching a final state (either successfully or failing).
 
@@ -292,10 +292,13 @@ class DataFlowKernel(object):
         structure.
 
         Args:
-             task_id (string) : Task id which is a uuid string
+             task_id (int) : Task id ## TODO: push up change to remove this being a UUID
              future (Future) : The future object corresponding to the task which
              makes this callback
         """
+
+        if not isinstance(task_id, int):
+            raise ValueError("BENC manual type check 1")
 
         try:
             res = future.result()
@@ -363,7 +366,10 @@ class DataFlowKernel(object):
                 self.tasks[task_id]['app_fu'].set_result(future.result())
 
             except Exception as e:
-                if future.retries_left > 0:
+                # we're getting a callabck where future is an arbitrary Future (from the executor) and we've assumed that parsl has decorated it somehow with a retries_left attibute... but the type system doesn't reflect that. TODO: use some protocol based retries_left detection, or perhaps move the retries count into the task record rather than the executor future?
+                detyped_future = cast(Any, future)
+
+                if detyped_future.retries_left > 0:
                     # ignore this exception, because assume some later
                     # parent executor, started external to this class,
                     # will provide the answer
