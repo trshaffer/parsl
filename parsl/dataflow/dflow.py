@@ -55,7 +55,7 @@ class TaskRecord(TypedDict, total=False):
 
     app_fu : AppFuture
     exec_fu : Optional[Future]
-    callback : Any  # I think this might be unused? PR#1514 removes this field.
+    callback : None  # I think this might be unused? PR#1514 removes this field.
 
     executor : str
 
