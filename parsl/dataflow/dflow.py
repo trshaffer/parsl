@@ -248,10 +248,7 @@ class DataFlowKernel(object):
             task_log_info['task_fail_history'] = ",".join(self.tasks[task_id]['fail_history'])
         task_log_info['task_depends'] = None
 
-        # this needs to be its own variable so that mypy can match up the Noneness of the value determined by the if statement with how it is used as an iterator: it can't do that for computed values.
-        deps = self.tasks[task_id]['depends']
-        if deps is not None:
-            task_log_info['task_depends'] = ",".join([str(t.tid) for t in deps])
+        task_log_info['task_depends'] = ",".join([str(t.tid) for t in self.tasks[task_id]['depends']])
         task_log_info['task_elapsed_time'] = None
 
         # explicit variables for None reasoning
@@ -743,8 +740,7 @@ class DataFlowKernel(object):
                                 kw)
                     )
 
-        task_def = {'depends': None,
-                    'executor': executor,
+        task_def = {'executor': executor,
                     'func_name': func.__name__,
                     'fn_hash': fn_hash,
                     'memoize': cache,

@@ -16,7 +16,7 @@ from parsl.dataflow.states import States
 class TaskRecord(TypedDict, total=False):
     func_name : str
     status : States
-    depends : Optional[List[Any]] # see note on _gather_all_deps for why this is Any at the moment not something more usefully tighter
+    depends : List[Any] # see note on _gather_all_deps for why this is Any at the moment not something more usefully tighter
 
     app_fu : AppFuture
     exec_fu : Optional[Future]
