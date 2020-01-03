@@ -70,7 +70,8 @@ class TaskRecord(TypedDict, total=False):
     fn_hash : Any
     args : Tuple[Any, ...]
     kwargs : Dict[str, Any]
-    env : Any
+
+    env : None  # this appears to be unused. TODO remove?
 
     time_submitted : Optional[datetime.datetime]
     time_returned : Optional[datetime.datetime]
