@@ -43,6 +43,9 @@ from parsl.monitoring.message_type import MessageType
 
 logger = logging.getLogger(__name__)
 
+# this is the (very loose) type for the type of a parsl dfk task record
+# I want to flesh it out using PEP 589 TypedDicts
+TaskRecord = Dict[str, Any]
 
 class DataFlowKernel(object):
     """The DataFlowKernel adds dependency awareness to an existing executor.
@@ -187,7 +190,7 @@ class DataFlowKernel(object):
             self.flowcontrol = FlowNoControl(self)
 
         self.task_count = 0
-        self.tasks = {} # type: Dict[int, Dict[str, Any]]
+        self.tasks = {} # type: Dict[int, TaskRecord]
         self.submitter_lock = threading.Lock()
 
         atexit.register(self.atexit_cleanup)

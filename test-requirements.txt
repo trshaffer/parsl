@@ -10,4 +10,4 @@ nbsphinx
 sphinx_rtd_theme
 mypy
 sqlalchemy-stubs
-
+typing_extensions   # to get newer type checking features - specifically PEP 589 on python <3.8
