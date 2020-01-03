@@ -19,7 +19,7 @@ from concurrent.futures import Future
 from functools import partial
 
 # only for type checking:
-from typing import Any, Callable, Dict, Iterable, Optional, Union, List, Tuple, cast
+from typing import Any, Callable, Dict, Iterable, Optional, Union, List, Sequence, Tuple, cast
 from parsl.channels.base import Channel
 from parsl.providers.provider_base import Channeled, MultiChanneled
 
@@ -861,7 +861,7 @@ class DataFlowKernel(object):
 
         channel.makedirs(channel.script_dir, exist_ok=True)
 
-    def add_executors(self, executors: List[ParslExecutor]) -> None:
+    def add_executors(self, executors: Sequence[ParslExecutor]) -> None:
         for executor in executors:
             executor.run_dir = self.run_dir
             executor.hub_address = self.hub_address

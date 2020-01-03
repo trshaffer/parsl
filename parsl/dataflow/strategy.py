@@ -13,6 +13,7 @@ from typing import Any
 from typing import Callable
 from typing import List
 from typing import Optional
+from typing import Sequence
 from typing import cast
 
 # this is used for testing a class to decide how to
@@ -146,7 +147,7 @@ class Strategy(object):
 
         logger.debug("Scaling strategy: {0}".format(self.config.strategy))
 
-    def add_executors(self, executors: List[ParslExecutor]) -> None:
+    def add_executors(self, executors: Sequence[ParslExecutor]) -> None:
         for executor in executors:
             self.executors[executor.label] = {'idle_since': None, 'config': executor.label}
 
