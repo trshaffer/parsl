@@ -194,11 +194,9 @@ class DataFlowKernel(object):
 
         atexit.register(self.atexit_cleanup)
 
-    def _create_task_log_info(self, task_id: int, fail_mode: Optional[bool] =None) -> Dict[str, Any]:
+    def _create_task_log_info(self, task_id: int, fail_mode: str) -> Dict[str, Any]:
         """
         Create the dictionary that will be included in the log.
-
-        TODO: what do the three modes for fail_mode mean?
 
         """
 
@@ -261,8 +259,7 @@ class DataFlowKernel(object):
         time_submitted = self.tasks[task_id]['time_submitted']
         if time_returned is not None and time_submitted is not None:
             task_log_info['task_elapsed_time'] = (time_returned - time_submitted).total_seconds()
-        if fail_mode is not None:
-            task_log_info['task_fail_mode'] = fail_mode
+        task_log_info['task_fail_mode'] = fail_mode
         return task_log_info
 
     def _count_deps(self, depends):
@@ -287,7 +284,7 @@ class DataFlowKernel(object):
         """
         return self._config
 
-    def handle_exec_update(self, task_id, future):
+    def handle_exec_update(self, task_id, future) -> None:
         """This function is called only as a callback from an execution
         attempt reaching a final state (either successfully or failing).
 
