@@ -61,7 +61,9 @@ class TaskRecord(TypedDict, total=False):
 
     fail_count : int
     fail_history : List[Any]
+
     checkpoint : bool # this change is also in #1516
+    hashsum : str # hash for checkpointing/memoization.
 
     task_launch_lock : threading.Lock
 
@@ -997,7 +999,7 @@ class DataFlowKernel(object):
 
         logger.info("DFK cleanup complete")
 
-    def checkpoint(self, tasks=None):
+    def checkpoint(self, tasks=None) -> str:
         """Checkpoint the dfk incrementally to a checkpoint file.
 
         When called, every task that has been completed yet not
@@ -1047,7 +1049,7 @@ class DataFlowKernel(object):
                             continue
                         t = {'hash': hashsum,
                              'exception': None,
-                             'result': None}
+                             'result': None} # type: Dict[str, Any]
                         try:
                             # Asking for the result will raise an exception if
                             # the app had failed. Should we even checkpoint these?
