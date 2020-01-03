@@ -28,7 +28,7 @@ class TaskRecord(TypedDict, total=False):
     fail_history : List[Any]
 
     checkpoint : bool # this change is also in #1516
-    hashsum : str # hash for checkpointing/memoization.
+    hashsum : Optional[str] # hash for checkpointing/memoization.
 
     task_launch_lock : threading.Lock
 

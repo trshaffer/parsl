@@ -1,6 +1,7 @@
 import hashlib
 import logging
 from parsl.executors.serialize.serialize import serialize_object
+from parsl.dataflow.taskrecord import TaskRecord
 
 from typing import Dict, Any, Tuple, Union, TYPE_CHECKING
 
@@ -62,7 +63,8 @@ class Memoizer(object):
             logger.info("App caching disabled for all apps")
             self.memo_lookup_table = {}
 
-    def make_hash(self, task: Dict[str, Any]) -> str:
+
+    def make_hash(self, task: TaskRecord) -> str:
         """Create a hash of the task inputs.
 
         This uses a serialization library borrowed from ipyparallel.
@@ -79,13 +81,12 @@ class Memoizer(object):
         t = [serialize_object(task['func_name'])[0],
              serialize_object(task['fn_hash'])[0],
              serialize_object(task['args'])[0],
-             serialize_object(task['kwargs'])[0],
-             serialize_object(task['env'])[0]]
+             serialize_object(task['kwargs'])[0]]
         x = b''.join(t)
         hashedsum = hashlib.md5(x).hexdigest()
         return hashedsum
 
-    def check_memo(self, task_id: bool, task: Dict[str, Any]) -> 'Tuple[bool, Union[None, Future[Any]]]':
+    def check_memo(self, task_id: bool, task: TaskRecord) -> 'Tuple[bool, Union[None, Future[Any]]]':
         """Create a hash of the task and its inputs and check the lookup table for this hash.
 
         If present, the results are returned. The result is a tuple indicating whether a memo
@@ -131,7 +132,7 @@ class Memoizer(object):
         """
         return self.memo_lookup_table[hashsum]
 
-    def update_memo(self, task_id: str, task: 'Dict[str, Any]', r: 'Future[Any]') -> None:
+    def update_memo(self, task_id: str, task: 'TaskRecord', r: 'Future[Any]') -> None:
         """Updates the memoization lookup table with the result from a task.
 
         Args:
@@ -143,6 +144,12 @@ class Memoizer(object):
         This is not likely.
         """
         if not self.memoize or not task['memoize']:
+            return
+
+        # this test is so that at runtime we know the value from task['hashsum']
+        # is definitely a string, and not None, going into lookup table operations.
+        if not isinstance(task['hashsum'], str):
+            logger.warning("Attempting to update app cache entry but hashsum is not a string key")
             return
 
         if task['hashsum'] in self.memo_lookup_table:
