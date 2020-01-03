@@ -262,7 +262,7 @@ class DataFlowKernel(object):
         task_log_info['task_fail_mode'] = fail_mode
         return task_log_info
 
-    def _count_deps(self, depends):
+    def _count_deps(self, depends: List[Any]) -> int:
         """Internal.
 
         Count the number of unresolved futures in the list depends.
@@ -276,7 +276,7 @@ class DataFlowKernel(object):
         return count
 
     @property
-    def config(self):
+    def config(self) -> Config:
         """Returns the fully initialized config that the DFK is actively using.
 
         Returns:
