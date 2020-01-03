@@ -61,7 +61,7 @@ class TaskRecord(TypedDict, total=False):
 
     fail_count : int
     fail_history : List[Any]
-    checkpoint : bool
+    checkpoint : bool # this change is also in #1516
 
     task_launch_lock : threading.Lock
 
