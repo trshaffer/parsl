@@ -2,7 +2,6 @@ import logging
 import os
 import pathlib
 import uuid
-from typing import List
 
 from ipyparallel import Client
 from parsl.providers import LocalProvider
@@ -10,8 +9,12 @@ from parsl.providers.provider_base import JobStatus, JobState, ExecutionProvider
 from parsl.utils import RepresentationMixin
 
 from parsl.executors.base import ParslExecutor
+
 from parsl.executors.errors import ScalingFailed
 from parsl.executors.ipp_controller import Controller
+from parsl.executors.status_handling import StatusHandlingExecutor
+from parsl.providers import LocalProvider
+from parsl.utils import RepresentationMixin
 from parsl.utils import wait_for_file
 
 from typing import Any
@@ -21,7 +24,7 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 
-class IPyParallelExecutor(ParslExecutor, RepresentationMixin):
+class IPyParallelExecutor(StatusHandlingExecutor, RepresentationMixin):
     """The IPython Parallel executor.
 
     This executor uses IPythonParallel's pilot execution system to manage multiple processes
@@ -81,7 +84,8 @@ class IPyParallelExecutor(ParslExecutor, RepresentationMixin):
                  engine_debug_level: Optional[str] = None,
                  workers_per_node: int = 1,
                  managed: bool = True) -> None:
-        self.provider = provider
+
+        StatusHandlingExecutor.__init__(self, provider)
         self.label = label
         self.working_dir = working_dir
         self.controller = controller
@@ -272,15 +276,8 @@ sleep infinity
         else:
             logger.error("No execution provider available")
 
-    def status(self) -> List[JobStatus]:
-        """Returns the status of the executor via probing the execution providers."""
-        if self.provider:
-            status = self.provider.status(self.engines)
-
-        else:
-            status = []
-
-        return status
+    def _get_job_ids(self):
+        return self.engines
 
     # what the correct general signature for shutdown is, i don't know.
     # perhaps there are different ones? or perhaps they should all have targets and block?
