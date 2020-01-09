@@ -42,7 +42,6 @@ class ParslExecutor(metaclass=ABCMeta):
     label: str
     provider: ExecutionProvider
     managed: bool
-    status: Any  # what is this? used by strategy
     outstanding: Any  # what is this? used by strategy
     working_dir: Optional[str]
     storage_access: Optional[List[Any]]
@@ -132,7 +131,7 @@ class ParslExecutor(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def set_bad_state_and_fail_all(self, exception: Exception):
+    def set_bad_state_and_fail_all(self, exception: Exception) -> None:
         """Allows external error handlers to mark this executor as irrecoverably bad and cause
         all tasks submitted to it now and in the future to fail. The executor is responsible
         for checking  :method:bad_state_is_set() in the :method:submit() method and raising the
@@ -157,7 +156,7 @@ class ParslExecutor(metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def tasks(self) -> Dict[str, Future]:
+    def tasks(self) -> Dict[int, Future]:
         """Contains a dictionary mapping task IDs to the corresponding Future objects for all
         tasks that have been submitted to this executor."""
         pass

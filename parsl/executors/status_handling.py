@@ -2,7 +2,7 @@ import logging
 import threading
 from abc import abstractmethod
 from concurrent.futures import Future
-from typing import List, Any, Dict
+from typing import List, Any, Dict, Optional
 
 from parsl.executors.base import ParslExecutor
 from parsl.providers.provider_base import JobStatus, ExecutionProvider
@@ -16,8 +16,8 @@ class StatusHandlingExecutor(ParslExecutor):
         super().__init__()
         self._provider = provider
         self._executor_bad_state = threading.Event()
-        self._executor_exception = None
-        self._tasks = {}  # type: Dict[str, Future]
+        self._executor_exception = None  # type: Optional[Exception]
+        self._tasks = {}  # type: Dict[int, Future]
 
     def _make_status_dict(self, job_ids: List[Any], status_list: List[JobStatus]) -> Dict[Any, JobStatus]:
         """Given a list of job ids and a list of corresponding status strings,
@@ -73,7 +73,7 @@ class StatusHandlingExecutor(ParslExecutor):
         return self._executor_exception
 
     @property
-    def tasks(self) -> Dict[str, Future]:
+    def tasks(self) -> Dict[int, Future]:
         return self._tasks
 
     @property
@@ -84,7 +84,7 @@ class StatusHandlingExecutor(ParslExecutor):
 class NoStatusHandlingExecutor(ParslExecutor):
     def __init__(self):
         super().__init__()
-        self._tasks = {}
+        self._tasks = {}  # type: Dict[int, Future]
 
     @property
     def bad_state_is_set(self):
@@ -101,7 +101,7 @@ class NoStatusHandlingExecutor(ParslExecutor):
         return {}
 
     @property
-    def tasks(self) -> Dict[str, Future]:
+    def tasks(self) -> Dict[int, Future]:
         return self._tasks
 
     @property

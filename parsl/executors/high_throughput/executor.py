@@ -522,7 +522,7 @@ class HighThroughputExecutor(StatusHandlingExecutor, RepresentationMixin):
         Returns:
               Future
         """
-        if self.bad_state.is_set:
+        if self.bad_state_is_set:
             if self.executor_exception is None:
                 raise ValueError("Executor is in bad state, but no exception recorded")
             else:
