@@ -30,7 +30,7 @@ class AppBase(metaclass=ABCMeta):
 
     """
 
-    def __init__(self, func, data_flow_kernel: "Optional[DataFlowKernel]" = None, walltime: int = 60, executors='all', cache: bool = False) -> None:
+    def __init__(self, func, data_flow_kernel: "Optional[DataFlowKernel]" = None, executors='all', cache: bool = False) -> None:
         """Construct the App object.
 
         Args:
@@ -40,7 +40,6 @@ class AppBase(metaclass=ABCMeta):
              - data_flow_kernel (DataFlowKernel): The :class:`~parsl.dataflow.dflow.DataFlowKernel` responsible for
                managing this app. This can be omitted only
                after calling :meth:`parsl.dataflow.dflow.DataFlowKernelLoader.load`.
-             - walltime (int) : Walltime in seconds for the app execution.
              - executors (str|list) : Labels of the executors that this app can execute over. Default is 'all'.
              - cache (Bool) : Enable caching of this app ?
 
@@ -96,8 +95,6 @@ def App(apptype, data_flow_kernel: "Optional[DataFlowKernel]" = None, walltime: 
         - data_flow_kernel (DataFlowKernel): The :class:`~parsl.dataflow.dflow.DataFlowKernel` responsible for
           managing this app. This can be omitted only
           after calling :meth:`parsl.dataflow.dflow.DataFlowKernelLoader.load`.
-        - walltime (int) : Walltime for app in seconds,
-             default=60
         - executors (str|list) : Labels of the executors that this app can execute over. Default is 'all'.
         - cache (Bool) : Enable caching of the app call
              default=False
@@ -121,13 +118,12 @@ def App(apptype, data_flow_kernel: "Optional[DataFlowKernel]" = None, walltime: 
     def wrapper(f):
         return app_class(f,
                          data_flow_kernel=data_flow_kernel,
-                         walltime=walltime,
                          cache=cache,
                          executors=executors)
     return wrapper
 
 
-def python_app(function=None, data_flow_kernel: "Optional[DataFlowKernel]" = None, walltime: int = 60, cache: bool = False, executors='all'):
+def python_app(function=None, data_flow_kernel: "Optional[DataFlowKernel]" = None, cache: bool = False, executors='all'):
     """Decorator function for making python apps.
 
     Parameters
@@ -140,8 +136,6 @@ def python_app(function=None, data_flow_kernel: "Optional[DataFlowKernel]" = Non
     data_flow_kernel : DataFlowKernel
         The :class:`~parsl.dataflow.dflow.DataFlowKernel` responsible for managing this app. This can
         be omitted only after calling :meth:`parsl.dataflow.dflow.DataFlowKernelLoader.load`. Default is None.
-    walltime : int
-        Walltime for app in seconds. Default is 60.
     executors : string or list
         Labels of the executors that this app can execute over. Default is 'all'.
     cache : bool
@@ -153,7 +147,6 @@ def python_app(function=None, data_flow_kernel: "Optional[DataFlowKernel]" = Non
         def wrapper(f):
             return PythonApp(f,
                              data_flow_kernel=data_flow_kernel,
-                             walltime=walltime,
                              cache=cache,
                              executors=executors)
         return wrapper(func)
@@ -162,7 +155,7 @@ def python_app(function=None, data_flow_kernel: "Optional[DataFlowKernel]" = Non
     return decorator
 
 
-def bash_app(function=None, data_flow_kernel: "Optional[DataFlowKernel]" = None, walltime: int = 60, cache: bool = False, executors='all'):
+def bash_app(function=None, data_flow_kernel: "Optional[DataFlowKernel]" = None, cache: bool = False, executors='all'):
     """Decorator function for making bash apps.
 
     Parameters
@@ -188,7 +181,6 @@ def bash_app(function=None, data_flow_kernel: "Optional[DataFlowKernel]" = None,
         def wrapper(f):
             return BashApp(f,
                            data_flow_kernel=data_flow_kernel,
-                           walltime=walltime,
                            cache=cache,
                            executors=executors)
         return wrapper(func)

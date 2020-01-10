@@ -117,8 +117,8 @@ def remote_side_bash_executor(func, *args, **kwargs) -> int:
 
 class BashApp(AppBase):
 
-    def __init__(self, func, data_flow_kernel: Optional[DataFlowKernel] = None, walltime: int =60, cache: bool=False, executors='all') -> None:
-        super().__init__(func, data_flow_kernel=data_flow_kernel, walltime=60, executors=executors, cache=cache)
+    def __init__(self, func, data_flow_kernel: Optional[DataFlowKernel] = None, cache: bool=False, executors='all') -> None:
+        super().__init__(func, data_flow_kernel=data_flow_kernel, executors=executors, cache=cache)
         self.kwargs = {}
 
         # We duplicate the extraction of parameter defaults
