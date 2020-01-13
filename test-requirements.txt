@@ -8,6 +8,6 @@ coverage==4.5.4
 mock>=1.0.0
 nbsphinx
 sphinx_rtd_theme
-mypy
+mypy==0.761
 sqlalchemy-stubs
 typing_extensions   # to get newer type checking features - specifically PEP 589 on python <3.8
