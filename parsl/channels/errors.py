@@ -7,6 +7,11 @@ class ChannelError(Exception):
 
     Only to be invoked when only a more specific error is not available.
     """
+    def __init__(self, reason, hostname):
+        super().__init__()
+        self.reason = reason
+        self.hostname = hostname
+
     def __repr__(self):
         return "Hostname:{0}, Reason:{1}".format(self.hostname, self.reason)
 
@@ -25,9 +30,7 @@ class BadHostKeyException(ChannelError):
     '''
 
     def __init__(self, e, hostname):
-        super().__init__()
-        self.reason = "SSH channel could not be created since server's host keys could not be verified"
-        self.hostname = hostname
+        super().__init__("SSH channel could not be created since server's host keys could not be verified", hostname)
         self.e = e
 
 
@@ -41,9 +44,7 @@ class BadScriptPath(ChannelError):
     '''
 
     def __init__(self, e, hostname):
-        super().__init__()
-        self.reason = "Inaccessible remote script dir. Specify script_dir"
-        self.hostname = hostname
+        super().__init__("Inaccessible remote script dir. Specify script_dir", hostname)
         self.e = e
 
 
@@ -57,9 +58,7 @@ class BadPermsScriptPath(ChannelError):
     '''
 
     def __init__(self, e, hostname):
-        super().__init__()
-        self.reason = "User does not have permissions to access the script_dir"
-        self.hostname = hostname
+        super().__init__("User does not have permissions to access the script_dir", hostname)
         self.e = e
 
 
@@ -74,9 +73,7 @@ class FileExists(ChannelError):
     '''
 
     def __init__(self, e, hostname, filename=None):
-        super().__init__()
-        self.reason = "File name collision in channel transport phase:" + filename
-        self.hostname = hostname
+        super().__init__("File name collision in channel transport phase:" + filename, hostname)
         self.e = e
 
 
@@ -90,9 +87,7 @@ class AuthException(ChannelError):
     '''
 
     def __init__(self, e, hostname):
-        super().__init__()
-        self.reason = "Authentication to remote server failed"
-        self.hostname = hostname
+        super().__init__("Authentication to remote server failed", hostname)
         self.e = e
 
 
@@ -106,9 +101,7 @@ class SSHException(ChannelError):
     '''
 
     def __init__(self, e, hostname):
-        super().__init__()
-        self.reason = "Error connecting or establishing an SSH session"
-        self.hostname = hostname
+        super().__init__("Error connecting or establishing an SSH session", hostname)
         self.e = e
 
 
@@ -122,7 +115,5 @@ class FileCopyException(ChannelError):
     '''
 
     def __init__(self, e, hostname):
-        super().__init__()
-        self.reason = "File copy failed due to {0}".format(e)
-        self.hostname = hostname
+        super().__init__("File copy failed due to {0}".format(e), hostname)
         self.e = e
