@@ -1,19 +1,19 @@
 import argparse
 
 import parsl
-from parsl.app.app import App
+from parsl.app.app import python_app
 from parsl.tests.configs.local_ipp import config
 
 from concurrent.futures import Future
 
 from typing import Dict, Union
 
-@App('python')
+@python_app
 def increment(x):
     return x + 1
 
 
-@App('python')
+@python_app
 def slow_increment(x, dur):
     import time
     time.sleep(dur)

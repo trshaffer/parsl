@@ -6,7 +6,7 @@ import pytest
 from dateutil.parser import parse
 
 import parsl
-from parsl.app.app import App
+from parsl.app.app import python_app
 from parsl.tests.configs.local_threads_checkpoint_periodic import config
 
 dfk : parsl.DataFlowKernel
@@ -22,7 +22,7 @@ def local_teardown():
     parsl.clear()
 
 
-@App('python', cache=True)
+@python_app(cache=True)
 def slow_double(x, sleep_dur=1):
     import time
     time.sleep(sleep_dur)
