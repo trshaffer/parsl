@@ -246,8 +246,8 @@ class DataFlowKernel(object):
         if self.tasks[task_id]['fail_history'] is not None:
             task_log_info['task_fail_history'] = ",".join(self.tasks[task_id]['fail_history'])
         task_log_info['task_depends'] = None
-
-        task_log_info['task_depends'] = ",".join([str(t.tid) for t in self.tasks[task_id]['depends']])
+        task_log_info['task_depends'] = ",".join([str(t.tid) for t in self.tasks[task_id]['depends']
+                                                      if isinstance(t, AppFuture) or isinstance(t, DataFuture)])
         task_log_info['task_elapsed_time'] = None
 
         # explicit variables for None reasoning
@@ -359,8 +359,8 @@ class DataFlowKernel(object):
                 res = future.result()
                 if isinstance(res, RemoteExceptionWrapper):
                     res.reraise()
-                self.tasks[task_id]['app_fu'].set_result(future.result())
 
+                self.tasks[task_id]['app_fu'].set_result(future.result())
             except Exception as e:
                 # we're getting a callabck where future is an arbitrary Future (from the executor) and we've assumed that parsl has decorated it somehow with a retries_left attibute... but the type system doesn't reflect that. TODO: use some protocol based retries_left detection, or perhaps move the retries count into the task record rather than the executor future?
                 detyped_future = cast(Any, future)
@@ -404,6 +404,11 @@ class DataFlowKernel(object):
             if self.checkpoint_mode == 'task_exit':
                 self.checkpoint(tasks=[task_id])
 
+        # If checkpointing is turned on, wiping app_fu is left to the checkpointing code
+        # else we wipe it here.
+        if self.checkpoint_mode is None:
+            self.tasks[task_id]['app_fu'] = None
+        self.tasks[task_id]['depends'] = []
         return
 
     @staticmethod
@@ -650,9 +655,7 @@ class DataFlowKernel(object):
                 try:
                     new_args.extend([dep.result()])
                 except Exception as e:
-                    # Future doesn't necessarily have a tid
-                    if self.tasks[dep.tid]['status'] in FINAL_FAILURE_STATES:  # type: ignore
-                        dep_failures.extend([e])
+                    dep_failures.extend([e])
             else:
                 new_args.extend([dep])
 
@@ -663,9 +666,7 @@ class DataFlowKernel(object):
                 try:
                     kwargs[key] = dep.result()
                 except Exception as e:
-                    # Future doesn't necessarily have a tid
-                    if self.tasks[dep.tid]['status'] in FINAL_FAILURE_STATES:  # type: ignore
-                        dep_failures.extend([e])
+                    dep_failures.extend([e])
 
         # Check for futures in inputs=[<fut>...]
         if 'inputs' in kwargs:
@@ -675,9 +676,7 @@ class DataFlowKernel(object):
                     try:
                         new_inputs.extend([dep.result()])
                     except Exception as e:
-                        # Future doesn't necessarily have a tid
-                        if self.tasks[dep.tid]['status'] in FINAL_FAILURE_STATES:  # type: ignore
-                            dep_failures.extend([e])
+                        dep_failures.extend([e])
 
                 else:
                     new_inputs.extend([dep])
@@ -781,9 +780,15 @@ class DataFlowKernel(object):
         depends = self._gather_all_deps(args, kwargs)
         self.tasks[task_id]['depends'] = depends
 
-        logger.info("Task {} submitted for App {}, waiting on tasks {}".format(task_id,
-                                                                               task_def['func_name'],
-                                                                               [fu.tid for fu in depends]))
+        depend_descs = []
+        for d in depends:
+            if isinstance(d, AppFuture) or isinstance(d, DataFuture):
+                depend_descs.append("task {}".format(d.tid))
+            else:
+                depend_descs.append(repr(d))
+        logger.info("Task {} submitted for App {}, waiting on {}".format(task_id,
+                                                                         task_def['func_name'],
+                                                                         ", ".join(depend_descs)))
 
         self.tasks[task_id]['task_launch_lock'] = threading.Lock()
 
@@ -1033,9 +1038,11 @@ class DataFlowKernel(object):
             with open(checkpoint_tasks, 'ab') as f:
                 for task_id in checkpoint_queue:
                     if not self.tasks[task_id]['checkpoint'] and \
+                       self.tasks[task_id]['app_fu'] is not None and \
                        self.tasks[task_id]['app_fu'].done() and \
                        self.tasks[task_id]['app_fu'].exception() is None:
                         hashsum = self.tasks[task_id]['hashsum']
+                        self.tasks[task_id]['app_fu'] = None
                         if not hashsum:
                             continue
                         t = {'hash': hashsum,
