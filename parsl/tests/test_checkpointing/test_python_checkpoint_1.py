@@ -1,36 +1,39 @@
 import argparse
 import os
+import time
+
 import pytest
 
 import parsl
-from parsl import python_app
+from parsl.app.app import python_app
 from parsl.tests.configs.local_threads import config
 
 
+local_config = config
+
+
 @python_app(cache=True)
-def random_app(i):
-    import random
-    return random.randint(i, 100000)
-
-
-def launch_n_random(n=2):
-    """1. Launch a few apps and write the checkpoint once a few have completed
-    """
-
-    d = [random_app(i) for i in range(0, n)]
-    print("Done launching")
-
-    # Block till done
-    return [i.result() for i in d]
+def slow_double(x, sleep_dur=1):
+    import time
+    time.sleep(sleep_dur)
+    return x * 2
 
 
 @pytest.mark.local
 def test_initial_checkpoint_write(n=2):
     """1. Launch a few apps and write the checkpoint once a few have completed
     """
-    parsl.load(config)
-    results = launch_n_random(n)
 
+    d = {}
+    time.time()
+    print("Launching : ", n)
+    for i in range(0, n):
+        d[i] = slow_double(i)
+    print("Done launching")
+
+    for i in range(0, n):
+        d[i].result()
+    print("Done sleeping")
     cpt_dir = parsl.dfk().checkpoint()
 
     cptpath = cpt_dir + '/dfk.pkl'
@@ -43,10 +46,7 @@ def test_initial_checkpoint_write(n=2):
     assert os.path.exists(
         cptpath), "Tasks checkpoint missing: {0}".format(cptpath)
 
-    run_dir = parsl.dfk().run_dir
-    parsl.clear()
-
-    return run_dir, results
+    return parsl.dfk().run_dir
 
 
 if __name__ == '__main__':
