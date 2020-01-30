@@ -247,7 +247,6 @@ sleep infinity
         None, and the return value doesn't seem used anywhere from this
         scale_out?
         """
-        r = []  # type: List[Any]
         for i in range(blocks):
             if self.provider:
                 block = self.provider.submit(self.launch_cmd, self.workers_per_node)
@@ -256,9 +255,8 @@ sleep infinity
                     raise(ScalingFailed(self.provider.label,
                                         "Attempts to provision nodes via provider has failed"))
                 self.engines.extend([block])
-                r.extend([block])
-        else:
-            logger.error("No execution provider available")
+            else:
+                logger.error("No execution provider available at scale_out")
 
         return None
 
@@ -274,7 +272,10 @@ sleep infinity
         if self.provider:
             self.provider.cancel(to_kill)
         else:
-            logger.error("No execution provider available")
+            logger.error("No execution provider available at scale_in")
+            r = None
+
+        return r
 
     def _get_job_ids(self):
         return self.engines
