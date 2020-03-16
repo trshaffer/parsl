@@ -165,6 +165,9 @@ def WorkQueueSubmitThread(task_queue=multiprocessing.Queue(),
             output_files = item["output_files"]
             std_files = item["std_files"]
             env_pkg = item["env_pkg"]
+            cores = item["cores"]
+            memory = item["memory"]
+            disk = item["disk"]
 
             full_script_name = workqueue_worker.__file__
             script_name = full_script_name.split("/")[-1]
@@ -239,6 +242,13 @@ def WorkQueueSubmitThread(task_queue=multiprocessing.Queue(),
                 t.specify_file(item[0], item[1], WORK_QUEUE_OUTPUT, cache=item[2])
             for item in std_files:
                 t.specify_file(item[0], item[1], WORK_QUEUE_OUTPUT, cache=item[2])
+
+            if cores is not None:
+                t.specify_cores(cores)
+            if memory is not None:
+                t.specify_memory(memory)
+            if disk is not None:
+                t.specify_disk(disk)
 
             # Submit the task to the WorkQueue object
             logger.debug("Submitting task {} to WorkQueue".format(parsl_id))
@@ -489,6 +499,18 @@ class WorkQueueExecutor(NoStatusHandlingExecutor):
             each task. This greatly increases task latency, but does not
             require a common environment or shared FS on execution nodes.
 
+        cores: int
+            Override the resource specifcation on *all* Parsl tasks to
+            require the given number of cores.
+
+        memory: int
+            Override the resource specifcation on *all* Parsl tasks to
+            require the given amount of memory (in MB).
+
+        disk: int
+            Override the resource specifcation on *all* Parsl tasks to
+            require the given amount of disk (in MB).
+
         init_command: str
             Command to run before constructed Work Queue command
 
@@ -510,6 +532,9 @@ class WorkQueueExecutor(NoStatusHandlingExecutor):
                  shared_fs=False,
                  source=False,
                  pack=False,
+                 cores=None,
+                 memory=None,
+                 disk=None,
                  init_command="",
                  full_debug=True,
                  see_worker_output=False):
@@ -538,6 +563,9 @@ class WorkQueueExecutor(NoStatusHandlingExecutor):
         self.full = full_debug
         self.source = source
         self.pack = pack
+        self.cores = cores
+        self.memory = memory
+        self.disk = disk
         self.cancel_value = multiprocessing.Value('i', 1)
 
         # Resolve ambiguity when password and password_file are both specified
@@ -775,6 +803,9 @@ class WorkQueueExecutor(NoStatusHandlingExecutor):
         msg = {"task_id": task_id,
                "data_loc": function_data_file,
                "env_pkg": env_pkg,
+               "cores": self.cores,
+               "memory": self.memory,
+               "disk": self.disk,
                "result_loc": function_result_file,
                "input_files": input_files,
                "output_files": output_files,
