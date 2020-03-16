@@ -32,6 +32,7 @@ try:
     from work_queue import WORK_QUEUE_OUTPUT
     from work_queue import WORK_QUEUE_RESULT_SUCCESS
     from work_queue import WORK_QUEUE_RESULT_OUTPUT_MISSING
+    from work_queue import WORK_QUEUE_ALLOCATION_MODE_MAX
     from work_queue import cctools_debug_flags_set
     from work_queue import cctools_debug_config_file
 except ImportError:
@@ -81,6 +82,7 @@ def WorkQueueSubmitThread(task_queue=multiprocessing.Queue(),
                           see_worker_output=False,
                           data_dir=".",
                           full=False,
+                          autolabel=False,
                           cancel_value=multiprocessing.Value('i', 1),
                           port=WORK_QUEUE_DEFAULT_PORT,
                           wq_log_dir=None,
@@ -119,6 +121,14 @@ def WorkQueueSubmitThread(task_queue=multiprocessing.Queue(),
         q.specify_password(project_password)
     elif project_password_file:
         q.specify_password_file(project_password_file)
+    if autolabel:
+        q.enable_monitoring()
+        q.specify_category_mode(None, WORK_QUEUE_ALLOCATION_MODE_MAX)
+        # We're running individual functions so try a relatively
+        # small allocation first. Hungrier tasks will be automatically
+        # retried with higher limits.
+        q.specify_category_max_resources(None,
+                {'cores': 1, 'memory':  1024, 'disk': 10240})
 
     # Only write logs when the wq_log_dir is specified, which it most likely will be
     if wq_log_dir is not None:
@@ -511,6 +521,10 @@ class WorkQueueExecutor(NoStatusHandlingExecutor):
             Override the resource specifcation on *all* Parsl tasks to
             require the given amount of disk (in MB).
 
+        autolabel: bool
+            Use the Resource Monitor to automatically determine resource
+            labels based on observed task behavior.
+
         init_command: str
             Command to run before constructed Work Queue command
 
@@ -535,6 +549,7 @@ class WorkQueueExecutor(NoStatusHandlingExecutor):
                  cores=None,
                  memory=None,
                  disk=None,
+                 autolabel=False,
                  init_command="",
                  full_debug=True,
                  see_worker_output=False):
@@ -566,6 +581,7 @@ class WorkQueueExecutor(NoStatusHandlingExecutor):
         self.cores = cores
         self.memory = memory
         self.disk = disk
+        self.autolabel = autolabel
         self.cancel_value = multiprocessing.Value('i', 1)
 
         # Resolve ambiguity when password and password_file are both specified
@@ -612,6 +628,7 @@ class WorkQueueExecutor(NoStatusHandlingExecutor):
                                  "collector_queue": self.collector_queue,
                                  "see_worker_output": self.worker_output,
                                  "full": self.full,
+                                 "autolabel": self.autolabel,
                                  "cancel_value": self.cancel_value,
                                  "port": self.port,
                                  "wq_log_dir": self.wq_log_dir,
