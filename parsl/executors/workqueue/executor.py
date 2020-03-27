@@ -124,6 +124,7 @@ def WorkQueueSubmitThread(task_queue=multiprocessing.Queue(),
     if autolabel:
         q.enable_monitoring()
         q.specify_category_mode('parsl-default', WORK_QUEUE_ALLOCATION_MODE_MAX_THROUGHPUT)
+        q.tune('category-steady-n-tasks', 1)
 
     # Only write logs when the wq_log_dir is specified, which it most likely will be
     if wq_log_dir is not None:
@@ -173,6 +174,7 @@ def WorkQueueSubmitThread(task_queue=multiprocessing.Queue(),
             cores = item["cores"]
             memory = item["memory"]
             disk = item["disk"]
+            category = item["category"]
 
             full_script_name = workqueue_worker.__file__
             script_name = full_script_name.split("/")[-1]
@@ -222,7 +224,12 @@ def WorkQueueSubmitThread(task_queue=multiprocessing.Queue(),
                 logger.error("Unable to create task: {}".format(e))
                 continue
 
-            t.specify_category('parsl-default')
+            if category is None:
+                t.specify_category('parsl-default')
+            else:
+                t.specify_category(category)
+                if autolabel:
+                    q.specify_category_mode(category, WORK_QUEUE_ALLOCATION_MODE_MAX_THROUGHPUT)
 
             # Specify environment variables for the task
             if env is not None:
@@ -781,6 +788,8 @@ class WorkQueueExecutor(NoStatusHandlingExecutor):
         logger.debug("Creating Task {} with executable at: {}".format(task_id, function_data_file))
         logger.debug("Creating Task {} with result to be found at: {}".format(task_id, function_result_file))
 
+        category = func.__qualname__
+
         # Obtain function information and put into dictionary
         if self.source:
             # Obtain function information and put into dictionary
@@ -820,6 +829,7 @@ class WorkQueueExecutor(NoStatusHandlingExecutor):
                "cores": self.cores,
                "memory": self.memory,
                "disk": self.disk,
+               "category": category,
                "result_loc": function_result_file,
                "input_files": input_files,
                "output_files": output_files,
