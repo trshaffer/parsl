@@ -14,6 +14,7 @@ import hashlib
 import subprocess
 import shutil
 import os
+import re
 import pickle
 import queue
 import inspect
@@ -135,7 +136,6 @@ class WorkQueueExecutor(NoStatusHandlingExecutor):
             Use conda-pack to prepare a self-contained Python evironment for
             each task. This greatly increases task latency, but does not
             require a common environment or shared FS on execution nodes.
-            Implies source=True.
 
         autolabel: bool
             Use the Resource Monitor to automatically determine resource
@@ -201,7 +201,7 @@ class WorkQueueExecutor(NoStatusHandlingExecutor):
         self.used_names = {}
         self.registered_files = set()
         self.full = full_debug
-        self.source = True if pack else source
+        self.source = source
         self.pack = pack
         self.autolabel = autolabel
         self.autolabel_window = autolabel_window
@@ -356,6 +356,16 @@ class WorkQueueExecutor(NoStatusHandlingExecutor):
 
         return fu
 
+    def _preprocess_source(self, fn):
+        source = inspect.getsource(fn).splitlines()
+        # We'll drop the first line as it names the parsl decorator used (i.e., @python_app)
+        assert re.match(r"\s*@\w+", source[0])
+        # The worker-side exec script depends on Parsl for exception types and ipyparallel.serialize
+        # Add those imports here so they get picked up when scanning dependencies
+        extra_imports = ["import parsl", "import ipyparallel"]
+        return "\n".join(extra_imports + source[1:])
+
+
     def _serialize_function(self, fn_path, parsl_fn, parsl_fn_args, parsl_fn_kwargs):
         """Takes the function application parsl_fn(*parsl_fn_args, **parsl_fn_kwargs)
         and serializes it to the file fn_path."""
@@ -363,7 +373,7 @@ class WorkQueueExecutor(NoStatusHandlingExecutor):
         # Either build a dictionary with the source of the function, or pickle
         # the function directly:
         if self.source:
-            function_info = {"source code": inspect.getsource(parsl_fn),
+            function_info = {"source code": self._preprocess_source(parsl_fn),
                              "name": parsl_fn.__name__,
                              "args": parsl_fn_args,
                              "kwargs": parsl_fn_kwargs}
@@ -429,7 +439,7 @@ class WorkQueueExecutor(NoStatusHandlingExecutor):
         if fn_id in self.cached_envs:
             logger.debug("Skipping analysis of %s, previously got %s", fn_name, self.cached_envs[fn_id])
             return self.cached_envs[fn_id]
-        source_code = inspect.getsource(fn).encode()
+        source_code = self._preprocess_source(fn).encode()
         pkg_dir = os.path.join(tempfile.gettempdir(), "python_package-{}".format(os.geteuid()))
         os.makedirs(pkg_dir, exist_ok=True)
         with tempfile.NamedTemporaryFile(suffix='.yaml') as spec:

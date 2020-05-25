@@ -1,6 +1,4 @@
-from parsl.app.errors import RemoteExceptionWrapper
-from parsl.data_provider.files import File
-from parsl.utils import get_std_fname_mode
+import parsl
 import traceback
 import sys
 import pickle
@@ -36,7 +34,7 @@ def dump_result_to_file(result_file, result_package):
 
 
 def remap_location(mapping, parsl_file):
-    if not isinstance(parsl_file, File):
+    if not isinstance(parsl_file, parsl.data_provider.files.File):
         return
     # Below we rewrite .local_path when scheme != file only when the local_name
     # was given by the main parsl process.  This is the case when scheme !=
@@ -64,7 +62,7 @@ def remap_all_files(mapping, fn_args, fn_kwargs):
         if kwarg in ["inputs", "outputs"]:
             remap_list_of_files(mapping, maybe_file)
         if kwarg in ["stdout", "stderr"]:
-            (fname, mode) = get_std_fname_mode(kwarg, maybe_file)
+            (fname, mode) = parsl.utils.get_std_fname_mode(kwarg, maybe_file)
             if fname in mapping:
                 fn_kwargs[kwarg] = (mapping[fname], mode)
         else:
@@ -119,14 +117,8 @@ def encode_function(user_namespace, fn, fn_name, fn_args, fn_kwargs):
 
 
 def encode_source_code_function(user_namespace, fn, fn_name, args_name, kwargs_name, result_name):
-    # We drop the first line as it names the parsl decorator used (i.e., @python_app)
-    source = fn.split('\n')[1:]
-    fn_app = "{0} = {1}(*{2}, **{3})".format(result_name, fn_name, args_name, kwargs_name)
-
-    source.append(fn_app)
-
-    code = "\n".join(source)
-    return code
+    code = "\n{0} = {1}(*{2}, **{3})".format(result_name, fn_name, args_name, kwargs_name)
+    return fn + code
 
 
 def encode_byte_code_function(user_namespace, fn, fn_name, args_name, kwargs_name, result_name):
@@ -173,7 +165,7 @@ if __name__ == "__main__":
     except Exception:
         print("There was an error while setting up the function.")
         traceback.print_exc()
-        result = RemoteExceptionWrapper(*sys.exc_info())
+        result = parsl.app.errors.RemoteExceptionWrapper(*sys.exc_info())
 
     # Write out function result to the result file
     try:
